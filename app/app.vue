@@ -1,18 +1,18 @@
 <script setup lang="ts">
-const baseTitle = 'Mads Hougesen | Software Developer';
+const baseTitle = 'Alessandro Rosà | Software Engineer';
 const baseDescription =
-  'Software developer from Denmark. Lover of all things programming - but  always learning new stuff.';
+  'Software engineer Team Lead from Italy. Lover of all things programming - but  always learning new stuff.';
 const baseOgImage = '/og-image.png';
 const ogType = 'website';
-const author = 'Mads Hougesen';
-const ogSiteName = 'Mads Hougesen';
+const author = 'Alessandro Rosà';
+const ogSiteName = 'Alessandro Rosà';
 const twitterCard = 'summary_large_image';
-const twitterCreator = 'mads_hougesen';
-const twitterSite = '@mads_hougesen';
+const twitterCreator = 'alessandroburns';
+const twitterSite = '@alessandroburns';
 
 function titleTemplate(title?: string) {
   if (title?.length && title !== baseTitle) {
-    return `${title} | Mads Hougesen`;
+    return `${title} | Alessandro Rosà`;
   }
   return baseTitle;
 }

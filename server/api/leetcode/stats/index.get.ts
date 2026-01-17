@@ -46,7 +46,7 @@ export default defineCachedEventHandler(
       token: config.upstashRedisRestToken,
     });
 
-    const cacheKey = 'leetcode:stats';
+    const cacheKey = `leetcode:stats:${config.leetcodeUsername}`;
 
     const cached = await kvStore.get<string>(cacheKey).catch(() => undefined);
 
@@ -73,7 +73,7 @@ export default defineCachedEventHandler(
         },
         body: {
           query: `{
-              matchedUser(username: "hougesen") {
+              matchedUser(username: "${config.leetcodeUsername}") {
                 username
                 submitStats: submitStatsGlobal {
                   acSubmissionNum {

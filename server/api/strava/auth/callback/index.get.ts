@@ -52,7 +52,7 @@ export default defineEventHandler(async (event) => {
     method: 'POST',
   });
 
-  if (response?.athlete?.id === 48254750) {
+  if (response?.athlete?.id) {
     const kvStore = new Redis({
       url: config.upstashRedisRestUrl,
       token: config.upstashRedisRestToken,
@@ -61,6 +61,19 @@ export default defineEventHandler(async (event) => {
     await kvStore.mset({
       'strava:access_token': response.access_token,
       'strava:refresh_token': response.refresh_token,
+      'strava:athlete_id': response.athlete.id,
     });
+
+    return {
+      success: true,
+      athlete: {
+        id: response.athlete.id,
+        name: `${response.athlete.firstname} ${response.athlete.lastname}`,
+        username: response.athlete.username,
+      },
+      message: 'Successfully authenticated with Strava!',
+    };
   }
+
+  throw new Error('Failed to authenticate with Strava');
 });

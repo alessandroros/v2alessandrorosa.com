@@ -20,6 +20,8 @@ useServerSeoMeta({
 const { data: repositories } = useFetch('/api/github/repositories');
 
 const { data: metrics } = useFetch('/api/wakatime');
+
+const { data: sports } = useFetch('/api/strava/activities');
 </script>
 
 <template>
@@ -27,6 +29,8 @@ const { data: metrics } = useFetch('/api/wakatime');
     <Hero :languages="metrics?.languages" />
 
     <Projects :projects="repositories || []" />
+
+    <StravaStats v-if="sports && sports.length > 0" :sports="sports" />
 
     <BlogPosts />
 

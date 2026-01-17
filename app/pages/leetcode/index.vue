@@ -27,7 +27,7 @@ useServerSeoMeta({
 
       <a
         class="text-dark-primary text-xl underline dark:text-white-primary"
-        href="https://leetcode.com/u/hougesen"
+        href="https://leetcode.com/u/alessandroros"
         rel="noreferrer noopener"
         target="_blank"
         >Account</a

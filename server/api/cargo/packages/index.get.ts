@@ -20,7 +20,7 @@ export default defineCachedEventHandler(
       token: config.upstashRedisRestToken,
     });
 
-    const cacheKey = 'cargo:packages';
+    const cacheKey = `cargo:packages:${config.cargoUserId}`;
 
     const cached = await kvStore.get<string>(cacheKey).catch(() => undefined);
 
@@ -33,10 +33,11 @@ export default defineCachedEventHandler(
 
     const packages: CargoPackage[] = [];
 
-    let url: string | null =
-      'https://crates.io/api/v1/crates?page=1&per_page=10&sort=alpha&user_id=178342';
+    let url: string | null = config.cargoUserId
+      ? `https://crates.io/api/v1/crates?page=1&per_page=10&sort=alpha&user_id=${config.cargoUserId}`
+      : null;
 
-    do {
+    while (url) {
       const response: CargoResponse = await $fetch<CargoResponse>(url, {
         method: 'GET',
         headers: {
@@ -49,7 +50,7 @@ export default defineCachedEventHandler(
       }
 
       url = response?.meta?.next_page;
-    } while (url);
+    }
 
     packages.sort((a, b) => b.downloads - a.downloads);
 

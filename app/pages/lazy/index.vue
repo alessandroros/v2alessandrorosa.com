@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { secondsToHHMMSS } from '~~/strava';
 
-const title = 'Has Mads been lazy this week?';
+const title = 'Weekly Activity Stats';
 
 useHead({
   title,
@@ -24,19 +24,29 @@ const { data: sports } = useFetch('/api/strava/activities');
 const totalMinutes = computed(() => {
   let m = 0;
 
-  for (const sport of Object.values(sports ?? {})) {
+  for (const sport of Object.values(sports.value ?? {})) {
     m += sport?.this_week_elapsed_time || 0;
   }
 
   return m / 60;
 });
+
+const hasData = computed(() => sports.value && Object.keys(sports.value).length > 0);
 </script>
 
 <template>
   <div class="flex w-full flex-col gap-12 pb-8">
-    <SectionTitle>
-      Has Mads been lazy this week? {{ totalMinutes < 60 * 7 ? 'Yes!' : 'No!' }}
+    <SectionTitle v-if="hasData">
+      Have I been lazy this week? {{ totalMinutes < 60 * 7 ? 'Yes!' : 'No!' }}
     </SectionTitle>
+
+    <SectionTitle v-else>
+      Weekly Activity Stats
+    </SectionTitle>
+
+    <p v-if="!hasData" class="text-dark-primary dark:text-white-primary">
+      Strava integration is not configured. To enable activity tracking, set up your Strava API credentials.
+    </p>
 
     <section
       v-for="(sport, sportIndex) of sports"

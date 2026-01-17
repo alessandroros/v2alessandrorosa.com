@@ -34,6 +34,12 @@ export default defineCachedEventHandler(
       },
     );
 
+    // Return empty array if Strava is not configured
+    if (!accessToken) {
+      setResponseHeader(event, 'x-redis-cache', 'miss');
+      return [];
+    }
+
     const sports: Record<string, Sport> = {};
 
     const url = new URL('https://www.strava.com/api/v3/athlete/activities');

@@ -3,6 +3,14 @@ import { Redis } from '@upstash/redis/cloudflare';
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig(event);
 
+  // Return early if Strava is not configured
+  if (!config.stravaClientId || !config.stravaClientSecret) {
+    return {
+      access_token: null,
+      error: 'Strava not configured',
+    };
+  }
+
   const kvStore = new Redis({
     url: config.upstashRedisRestUrl,
     token: config.upstashRedisRestToken,
@@ -10,7 +18,10 @@ export default defineEventHandler(async (event) => {
 
   const refreshToken = await kvStore.get<string>('strava:refresh_token');
   if (!refreshToken) {
-    throw new Error('Refresh token is undefined');
+    return {
+      access_token: null,
+      error: 'Refresh token not found',
+    };
   }
 
   const url = new URL('https://www.strava.com/oauth/token');

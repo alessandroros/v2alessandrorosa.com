@@ -28,7 +28,7 @@ export default defineCachedEventHandler(
       token: config.upstashRedisRestToken,
     });
 
-    const cacheKey = 'github:repositories';
+    const cacheKey = `github:repositories`;
 
     const cached = await kvStore.get<string>(cacheKey).catch(() => undefined);
 
@@ -50,7 +50,7 @@ export default defineCachedEventHandler(
         body: {
           query: `
             query GET_PROJECTS {
-              user(login: "hougesen") {
+              user(login: "${config.githubUsername}") {
                 pinnedItems(first: 6) {
                   nodes {
                     ... on Repository {

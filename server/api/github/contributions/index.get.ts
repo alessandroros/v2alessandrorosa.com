@@ -328,7 +328,7 @@ export default defineCachedEventHandler(
       token: config.upstashRedisRestToken,
     });
 
-    const cacheKey = 'github:contributions';
+    const cacheKey = `github:contributions:${config.githubUsername}`;
 
     const cached = await kvStore.get<string>(cacheKey).catch(() => undefined);
 
@@ -357,7 +357,7 @@ export default defineCachedEventHandler(
             },
             body: {
               query: `{
-                user(login: "hougesen") {
+                user(login: "${config.githubUsername}") {
                   repositoriesContributedTo(
                     privacy: PUBLIC
                     first: 100

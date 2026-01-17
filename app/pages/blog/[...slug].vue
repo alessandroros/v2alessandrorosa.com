@@ -24,7 +24,7 @@ useServerHead({
 });
 
 useSeoMeta({
-  author: 'Mads Hougesen',
+  author: 'Alessandro Rosà',
   description: doc.value?.description,
   ogDescription: doc.value?.description,
   ogTitle: doc.value?.title,
@@ -35,7 +35,7 @@ useSeoMeta({
 });
 
 useServerSeoMeta({
-  author: 'Mads Hougesen',
+  author: 'Alessandro Rosà',
   description: doc.value?.description,
   ogDescription: doc.value?.description,
   ogTitle: doc.value?.title,
@@ -55,7 +55,7 @@ useServerSeoMeta({
         <h1>{{ doc.title }}</h1>
 
         <p class="font-medium">
-          By Mads Hougesen<template v-if="dates?.created"
+          By Alessandro Rosà<template v-if="dates?.created"
             >, {{ dates?.created?.toDateString() }}
           </template>
         </p>

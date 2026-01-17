@@ -10,7 +10,7 @@ defineProps<{
   <section v-if="crates?.length" id="projects" class="flex flex-col gap-8">
     <SectionTitle
       >Rust packages
-      <a href="https://crates.io/users/hougesen">📦</a></SectionTitle
+      <a href="https://crates.io/users/alessandroros">📦</a></SectionTitle
     >
 
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">

@@ -137,6 +137,9 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     githubApiKey: process?.env?.NUXT_GITHUB_API_KEY,
+    githubUsername: process?.env?.NUXT_GITHUB_USERNAME,
+    leetcodeUsername: process?.env?.NUXT_LEETCODE_USERNAME,
+    npmUsername: process?.env?.NUXT_NPM_USERNAME,
     stravaClientId: process?.env?.NUXT_STRAVA_CLIENT_ID,
     stravaClientSecret: process?.env?.NUXT_STRAVA_CLIENT_SECRET,
     stravaRefreshToken: process?.env?.NUXT_STRAVA_REFRESH_TOKEN,
@@ -147,7 +150,7 @@ export default defineNuxtConfig({
 
   site: {
     indexable: true,
-    url: 'https://mhouge.dk',
+    url: 'https://alessandror.dk',
     defaultLocale: 'en',
   },
 

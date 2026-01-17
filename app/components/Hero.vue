@@ -138,48 +138,20 @@ function easterEgg() {
           @mouseleave="stopRotation"
           >Hi,</span
         >
-        I'm Mads
+        I'm Alessandro
       </h1>
 
       <p class="text-xl text-black-primary dark:text-white-primary">
-        I am a software developer from Denmark. Lover of all things programming.
+        I am a software developer from Italy. I love programming and data science.
         {{
           formatLanguageText(languages?.map((l) => l.name) || defaultLanguages)
         }}
       </p>
 
       <p class="text-dark-primary text-xl dark:text-white-primary">
-        I work @
-        <a
-          class="underline"
-          href="https://cavea.io?utm_source=mhouge.dk"
-          rel="noreferrer noopener"
-          target="_blank"
-          >cavea.io</a
-        >
-        where I spend most of my time building tools for live streamers. Some
-        projects I've worked on include:
+        I work @ sdf where I spend most of my time collecting data and developing apps.
       </p>
 
-      <ul
-        class="mb-4 ml-8 list-disc text-xl text-black-primary dark:text-white-primary"
-      >
-        <li>A tool for automatically capturing highlights in livestreams</li>
-
-        <li>
-          A platform for running
-          <a
-            class="underline"
-            href="https://adlab.gg?utm_source=mhouge.dk"
-            rel="noreferrer noopener"
-            target="_blank"
-            >influencer campaigns</a
-          >
-          on Twitch
-        </li>
-
-        <li>Dozens of systems for tracking social media performance</li>
-      </ul>
 
       <div class="flex gap-4">
         <GithubLink />
@@ -189,10 +161,10 @@ function easterEgg() {
     </div>
 
     <NuxtPicture
-      alt="Image of Mads Hougesen"
-      class="order-first mx-auto w-9/12 lg:order-1 lg:mr-0 lg:w-fit lg:text-right max-w-xs xl:max-w-full"
-      :img-attrs="{ class: 'mr-auto lg:mr-0 ml-auto lg:text-right' }"
-      src="/mads-hougesen-image.png"
+      alt="Image of Alessandro Rosà"
+      class="order-first mx-auto w-8/12 lg:order-1 lg:mr-0 lg:w-fit lg:text-right max-w-sm xl:max-w-md"
+      :img-attrs="{ class: 'mr-auto lg:mr-0 ml-auto lg:text-right rounded-full aspect-square object-cover shadow-lg' }"
+      src="/alessandro_rosa.jpg"
     />
   </section>
 </template>

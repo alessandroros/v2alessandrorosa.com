@@ -1,7 +1,7 @@
 <template>
   <a
     aria-label="Link to my Github"
-    href="https://github.com/hougesen"
+    href="https://github.com/alessandroros"
     rel="noreferrer noopener"
     target="_blank"
   >

@@ -17,7 +17,7 @@ export default defineCachedEventHandler(
       token: config.upstashRedisRestToken,
     });
 
-    const cacheKey = 'npm:packages';
+    const cacheKey = `npm:packages:${config.npmUsername}`;
 
     const cached = await kvStore.get<string>(cacheKey).catch(() => undefined);
 
@@ -31,7 +31,7 @@ export default defineCachedEventHandler(
     const packages: NpmPackage[] = [];
 
     const url =
-      'https://registry.npmjs.org/-/v1/search?text=maintainer:hougesen&size=20';
+      `https://registry.npmjs.org/-/v1/search?text=maintainer:${config.npmUsername}&size=20`;
 
     const response = await $fetch<NpmResponse>(url, {
       method: 'GET',
@@ -43,7 +43,7 @@ export default defineCachedEventHandler(
     if (response?.objects && Array.isArray(response.objects)) {
       packages.push(
         ...(response.objects ?? []).filter(
-          (pkg) => pkg?.package?.publisher?.username === 'hougesen',
+          (pkg) => pkg?.package?.publisher?.username === config.npmUsername,
         ),
       );
     }

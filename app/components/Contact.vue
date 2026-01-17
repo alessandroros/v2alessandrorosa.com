@@ -12,8 +12,8 @@
 
         <a
           class="text-xl text-black-primary underline dark:text-white-primary"
-          href="mailto:mads@mhouge.dk"
-          >mads@mhouge.dk</a
+          href="mailto:info@alessandrorosa.com"
+          >info@alessandrorosa.com</a
         >
       </div>
 
@@ -21,7 +21,7 @@
         <IconsPin height="20" width="20" />
 
         <p class="text-xl text-black-primary dark:text-white-primary">
-          Odense, Danmark
+          Trento, Italy
         </p>
       </div>
     </div>
