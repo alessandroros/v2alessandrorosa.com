@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { secondsToHHMMSS } from '~~/strava';
 import type { Sport } from '~~/strava';
 
 const props = defineProps<{
@@ -13,6 +12,18 @@ const totalWeeklyMinutes = computed(() => {
   }
   return m / 60;
 });
+
+const toHoursMinutes = (seconds: number) => {
+  const totalMinutes = Math.floor(seconds / 60);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours === 0) {
+    return `${minutes}m`;
+  }
+
+  return `${hours}h ${minutes}m`;
+};
 </script>
 
 <template>
@@ -43,14 +54,14 @@ const totalWeeklyMinutes = computed(() => {
           <div class="flex flex-col">
             <span class="text-sm text-gray-600 dark:text-gray-400">This Week</span>
             <span class="text-lg font-semibold text-dark-primary dark:text-white-primary">
-              {{ secondsToHHMMSS(sport.this_week_elapsed_time) }}
+              {{ toHoursMinutes(sport.this_week_elapsed_time) }}
             </span>
           </div>
 
           <div class="flex flex-col">
             <span class="text-sm text-gray-600 dark:text-gray-400">This Month</span>
             <span class="text-lg font-semibold text-dark-primary dark:text-white-primary">
-              {{ secondsToHHMMSS(sport.this_month_elapsed_time) }}
+              {{ toHoursMinutes(sport.this_month_elapsed_time) }}
             </span>
           </div>
 
@@ -70,7 +81,7 @@ const totalWeeklyMinutes = computed(() => {
         </div>
 
         <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Total: {{ secondsToHHMMSS(sport.total_elapsed_time) }}
+          Total: {{ toHoursMinutes(sport.total_elapsed_time) }}
           <span v-if="sport?.total_distance">
             · {{ Math.floor(sport.total_distance / 1000) }}km
           </span>

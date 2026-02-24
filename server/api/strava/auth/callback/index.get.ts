@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis/cloudflare';
+import { Redis } from '@upstash/redis';
 
 type StravaAuthResponse = {
   access_token: string;
@@ -58,11 +58,13 @@ export default defineEventHandler(async (event) => {
       token: config.upstashRedisRestToken,
     });
 
-    await kvStore.mset({
-      'strava:access_token': response.access_token,
-      'strava:refresh_token': response.refresh_token,
-      'strava:athlete_id': response.athlete.id,
-    });
+    await kvStore
+      .mset({
+        'strava:access_token': response.access_token,
+        'strava:refresh_token': response.refresh_token,
+        'strava:athlete_id': response.athlete.id,
+      })
+      .catch(() => undefined);
 
     return {
       success: true,

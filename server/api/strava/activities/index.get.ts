@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis/cloudflare';
+import { Redis } from '@upstash/redis';
 import { REDIS_CACHE_DURATION, REQUEST_CACHE_DURATION } from '~~/caching';
 import {
   pascalCaseToSpaces,
@@ -156,7 +156,7 @@ export default defineCachedEventHandler(
     s.sort((a, b) => b.total_elapsed_time - a.total_elapsed_time);
 
     for (const k of s) {
-      k.activities.sort((a, b) => a.date.getTime() - b.date.getTime());
+      k.activities.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     }
 
     if (s?.length) {

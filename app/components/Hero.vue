@@ -8,7 +8,7 @@ defineProps<{
 
 const hiddenLanguages = ['other', 'netrw', 'json', 'markdown'];
 
-const defaultLanguages = ['Rust', 'Python', 'TypeScript'];
+const defaultLanguages = ['C#', 'HTML', 'TypeScript'];
 
 function formatLanguageText(inputLanguages?: string[]) {
   const l =
@@ -149,7 +149,7 @@ function easterEgg() {
       </p>
 
       <p class="text-dark-primary text-xl dark:text-white-primary">
-        I work @ sdf where I spend most of my time collecting data and developing apps.
+        I work @sdf where I spend most of my time collecting data and developing apps.
       </p>
 
 
@@ -164,7 +164,7 @@ function easterEgg() {
       alt="Image of Alessandro Rosà"
       class="order-first mx-auto w-8/12 lg:order-1 lg:mr-0 lg:w-fit lg:text-right max-w-sm xl:max-w-md"
       :img-attrs="{ class: 'mr-auto lg:mr-0 ml-auto lg:text-right rounded-full aspect-square object-cover shadow-lg' }"
-      src="/alessandro_rosa.jpg"
+      src="/alessandro_rosa.png"
     />
   </section>
 </template>

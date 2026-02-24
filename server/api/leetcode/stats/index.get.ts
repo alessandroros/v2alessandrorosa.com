@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis/cloudflare';
+import { Redis } from '@upstash/redis';
 import { REDIS_CACHE_DURATION, REQUEST_CACHE_DURATION } from '~~/caching';
 
 type LeetcodeResponse = {

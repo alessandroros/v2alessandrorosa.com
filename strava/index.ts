@@ -26,7 +26,7 @@ export function secondsToHHMMSS(totalSeconds: number) {
 }
 
 export type SportActivity = {
-  date: Date;
+  date: Date | string;
   distance: number;
   moving_time: number;
   elapsed_time: number;
