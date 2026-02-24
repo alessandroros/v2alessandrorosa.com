@@ -66,7 +66,7 @@ export default defineNuxtConfig({
     build: {
       markdown: {
         highlight: {
-          langs: ['shell', 'go'],
+          langs: ['shell', 'go', 'csharp', 'bash', 'yaml', 'json', 'typescript', 'javascript'],
           theme: {
             default: 'one-dark-pro',
           },
@@ -109,6 +109,9 @@ export default defineNuxtConfig({
         '/blog/choosing-a-tech-stack-as-a-junior-developer',
         '/blog/rogue-one-a-malware-story',
         '/blog/undergraduate-thesis',
+        '/blog/why-cloud-native-postgresql-is-a-game-changer-for-kubernetes',
+        '/blog/mediatr-and-web-apis-the-perfect-match-for-clean-crud-operations',
+        '/blog/nswag-a-game-changer-for-aspnet-core-and-angular-developers',
         '/lazy',
         '/leetcode',
         '/npm-packages',

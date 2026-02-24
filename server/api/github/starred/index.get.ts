@@ -2,19 +2,24 @@ import { Redis } from '@upstash/redis';
 import { REDIS_CACHE_DURATION, REQUEST_CACHE_DURATION } from '~~/caching';
 import type { Project } from '~~/github';
 
-type GithubReposoryResponse = {
+type GithubStarredResponse = {
   data: {
     user: {
-      repositories: {
+      starredRepositories: {
         nodes: Array<{
           description: string | null;
           homepageUrl: string | null;
           languages: { nodes: Array<{ color: string; name: string }> };
           name: string;
+          nameWithOwner: string;
           url: string | null;
           stargazerCount: number;
           isFork: boolean;
         }>;
+        pageInfo: {
+          hasNextPage: boolean;
+          endCursor: string | null;
+        };
       };
     };
   };
@@ -29,7 +34,7 @@ export default defineCachedEventHandler(
       token: config.upstashRedisRestToken,
     });
 
-    const cacheKey = `github:repositories`;
+    const cacheKey = `github:starred`;
 
     const cached = await kvStore.get<string>(cacheKey).catch(() => undefined);
 
@@ -40,7 +45,7 @@ export default defineCachedEventHandler(
       return cached as unknown as Project[];
     }
 
-    const response = await $fetch<GithubReposoryResponse>(
+    const response = await $fetch<GithubStarredResponse>(
       'https://api.github.com/graphql',
       {
         method: 'POST',
@@ -50,16 +55,15 @@ export default defineCachedEventHandler(
         },
         body: {
           query: `
-            query GET_PROJECTS {
+            query GET_STARRED {
               user(login: "${config.githubUsername}") {
-                repositories(
+                starredRepositories(
                   first: 6
-                  orderBy: { field: STARGAZERS, direction: DESC }
-                  isFork: false
-                  privacy: PUBLIC
+                  orderBy: { field: STARRED_AT, direction: DESC }
                 ) {
                   nodes {
                     name
+                    nameWithOwner
                     description
                     homepageUrl
                     url
@@ -75,6 +79,10 @@ export default defineCachedEventHandler(
                       }
                     }
                   }
+                  pageInfo {
+                    hasNextPage
+                    endCursor
+                  }
                 }
               }
             }
@@ -83,16 +91,17 @@ export default defineCachedEventHandler(
       },
     );
 
-    const projects = (response?.data?.user?.repositories?.nodes ?? [])
-      .filter((p) => !p.isFork) // Extra safety to exclude forks
-      .map((p) => ({
-        ...p,
-        languages: p?.languages?.nodes ?? [],
-        description: p?.description ?? '',
-        homepageUrl: p?.homepageUrl ?? '',
-        url: p?.url ?? '',
-        stargazerCount: p?.stargazerCount ?? 0,
-      }));
+    const projects = (
+      response?.data?.user?.starredRepositories?.nodes ?? []
+    ).map((p) => ({
+      ...p,
+      name: p?.nameWithOwner || p?.name,
+      languages: p?.languages?.nodes ?? [],
+      description: p?.description ?? '',
+      homepageUrl: p?.homepageUrl ?? '',
+      url: p?.url ?? '',
+      stargazerCount: p?.stargazerCount ?? 0,
+    }));
 
     if (projects.length) {
       kvStore
@@ -108,3 +117,4 @@ export default defineCachedEventHandler(
     maxAge: REQUEST_CACHE_DURATION,
   },
 );
+

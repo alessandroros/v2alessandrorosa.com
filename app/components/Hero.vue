@@ -142,14 +142,14 @@ function easterEgg() {
       </h1>
 
       <p class="text-xl text-black-primary dark:text-white-primary">
-        I am a software developer from Italy. I love programming and data science.
+        I am a software developer from Italy who loves programming and data science.
         {{
           formatLanguageText(languages?.map((l) => l.name) || defaultLanguages)
         }}
       </p>
 
       <p class="text-dark-primary text-xl dark:text-white-primary">
-        I work @sdf where I spend most of my time collecting data and developing apps.
+        I work @ sdf where I spend most of my time collecting data and developing apps.
       </p>
 
 
