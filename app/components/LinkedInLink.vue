@@ -1,7 +1,7 @@
 <template>
   <a
     aria-label="Link to my LinkedIn"
-    href="https://www.linkedin.com/in/mads-hougesen-78733016a/"
+    href="https://www.linkedin.com/in/alessandrorosa/"
     rel="noreferrer noopener"
     target="_blank"
   >
