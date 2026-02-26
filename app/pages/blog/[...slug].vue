@@ -50,7 +50,7 @@ useServerSeoMeta({
   <div class="flex size-full flex-col">
     <template v-if="doc">
       <article
-        class="prose mx-auto rounded-lg p-8 lg:prose-xl dark:prose-invert"
+        class="prose prose-sm mx-auto w-full max-w-full rounded-lg p-4 sm:prose-base sm:p-8 lg:prose-xl dark:prose-invert"
       >
         <h1>{{ doc.title }}</h1>
 
@@ -71,10 +71,11 @@ useServerSeoMeta({
       </article>
 
       <NuxtLink
-        class="mx-auto text-center font-bold text-black-secondary dark:text-white-secondary"
+        class="mx-auto my-8 text-center font-bold text-black-secondary dark:text-white-secondary"
         to="/"
-        >Back home</NuxtLink
       >
+        Back home
+      </NuxtLink>
     </template>
 
     <template v-else>
@@ -84,7 +85,9 @@ useServerSeoMeta({
 </template>
 
 <style>
-img {
+article img {
   border-radius: var(--radius-sm);
+  max-width: 100%;
+  height: auto;
 }
 </style>

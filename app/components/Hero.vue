@@ -71,21 +71,7 @@ function formatLanguageText(inputLanguages?: string[]) {
 const rotation = ref(0);
 
 const favicon = computed(() => {
-  if (!rotation.value) {
-    return [];
-  }
-
-  const v = rotation.value % 360;
-
-  const href = `/favicon${v === 0 ? '' : `-${v}`}.svg`;
-
-  return [
-    {
-      rel: 'icon',
-      type: 'image/svg+xml',
-      href,
-    },
-  ];
+  return [];
 });
 
 useHead({
@@ -128,7 +114,7 @@ function easterEgg() {
   >
     <div class="flex flex-col gap-4">
       <h1
-        class="text-5xl font-bold text-black-primary lg:text-6xl dark:text-white-primary"
+        class="break-words text-5xl font-bold text-black-primary lg:text-6xl dark:text-white-primary"
       >
         <span
           class="text-[color:var(--highlight)] duration-300"
@@ -151,7 +137,6 @@ function easterEgg() {
       <p class="text-dark-primary text-xl dark:text-white-primary">
         I work @ sdf where I spend most of my time collecting data and developing apps.
       </p>
-
 
       <div class="flex gap-4">
         <GithubLink />

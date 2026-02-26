@@ -1,7 +1,7 @@
 <template>
-  <nav class="mb-8">
+  <nav class="mb-8 overflow-hidden">
     <NuxtLink
-      class="text-3xl lowercase text-black-primary dark:text-white-primary"
+      class="block truncate text-3xl lowercase text-black-primary dark:text-white-primary"
       to="/"
       >Alessandro Rosà</NuxtLink
     >

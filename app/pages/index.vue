@@ -19,11 +19,29 @@ useServerSeoMeta({
   title,
 });
 
-const { data: repositories } = useFetch<Project[]>('/api/github/starred');
+const { data: starred } = useFetch<Project[]>('/api/github/starred');
+
+const { data: repositories } = useFetch<Project[]>('/api/github/repositories');
 
 const { data: metrics } = useFetch('/api/wakatime');
 
 const { data: sports } = useFetch('/api/strava/activities');
+
+const featuredProjects: Project[] = [
+  {
+    name: 'capitalquest.fun',
+    description:
+      'A platform to learn about capital markets through a fun and engaging experience.',
+    homepageUrl: 'https://capitalquest.fun',
+    url: 'https://capitalquest.fun',
+    stargazerCount: 0,
+    languages: [
+      { name: 'TypeScript', color: '#007ACC' },
+      { name: 'Angular', color: '#DD0230' },
+      { name: 'Mapbox GL JS', color: '#FFFFFF' },
+    ],
+  },
+];
 </script>
 
 <template>
@@ -32,7 +50,9 @@ const { data: sports } = useFetch('/api/strava/activities');
 
     <TechStack />
 
-    <Projects :projects="repositories ?? []" title="Starred Projects" />
+    <Projects :projects="featuredProjects" title="My Projects" />
+
+    <Projects :projects="starred ?? []" title="Starred Projects" />
 
     <StravaStats v-if="sports && sports.length > 0" :sports="sports" />
 
