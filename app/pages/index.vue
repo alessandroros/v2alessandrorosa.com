@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Project } from '~~/github';
+import type { WakatimeStatResponse } from '~~/wakatime';
 
 const title = '';
 
@@ -23,7 +24,7 @@ const { data: starred } = useFetch<Project[]>('/api/github/starred');
 
 const { data: repositories } = useFetch<Project[]>('/api/github/repositories');
 
-const { data: metrics } = useFetch('/api/wakatime');
+const { data: metrics } = useFetch<WakatimeStatResponse['data']>('/api/wakatime');
 
 const { data: sports } = useFetch('/api/strava/activities');
 
@@ -47,6 +48,8 @@ const featuredProjects: Project[] = [
 <template>
   <div class="flex w-full flex-col gap-12 pb-8">
     <Hero :languages="metrics?.languages" />
+
+    <ProgrammingMetrics v-if="metrics" :metrics="metrics" />
 
     <TechStack />
 
