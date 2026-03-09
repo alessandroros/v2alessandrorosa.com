@@ -53,8 +53,6 @@ const featuredProjects: Project[] = [
 
     <TechStack />
 
-    <ProgrammingMetrics v-if="metrics" :metrics="metrics" />
-
     <Projects :projects="featuredProjects" title="My Projects" />
 
     <Projects :projects="starred ?? []" title="Starred Projects" />
