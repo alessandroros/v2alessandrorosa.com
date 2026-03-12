@@ -49,8 +49,6 @@ const featuredProjects: Project[] = [
   <div class="flex w-full flex-col gap-12 pb-8">
     <Hero :languages="metrics?.languages" />
 
-    <ProgrammingMetrics v-if="metrics" :metrics="metrics" />
-
     <TechStack />
 
     <Projects :projects="featuredProjects" title="My Projects" />
