@@ -127,7 +127,7 @@ After running CloudNativePG in production for our systems, here's what stands ou
 ### Real-World Scenarios
 
 **Scenario 1: Node Failure**
-When a Kubernetes node failed, CloudNativePG automatically rescheduled the affected pod to a healthy node and updated the replication configuration. Total downtime: 0 seconds for reads, ~30 seconds for writes during failover.
+When a Kubernetes node failed, CloudNativePG automatically rescheduled the affected pod to a healthy node and updated the replication configuration. Total downtime: 0 seconds for reads, approximately 30 seconds for writes during failover.
 
 **Scenario 2: Version Upgrade**
 We upgraded from PostgreSQL 15 to PostgreSQL 16 using rolling updates. The operator handled the upgrade one instance at a time, ensuring continuous availability throughout the process.

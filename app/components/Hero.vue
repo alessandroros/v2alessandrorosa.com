@@ -71,7 +71,20 @@ function formatLanguageText(inputLanguages?: string[]) {
 const rotation = ref(0);
 
 const favicon = computed(() => {
-  return [];
+  if (rotation.value === 0) {
+    return [{ rel: 'icon', href: '/ar.png', type: 'image/png' }];
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = 64;
+  canvas.height = 64;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return [];
+  const img = new Image();
+  img.src = '/ar.png';
+  ctx.translate(32, 32);
+  ctx.rotate((rotation.value * Math.PI) / 180);
+  ctx.drawImage(img, -32, -32, 64, 64);
+  return [{ rel: 'icon', href: canvas.toDataURL('image/png'), type: 'image/png' }];
 });
 
 useHead({
@@ -135,7 +148,7 @@ function easterEgg() {
       </p>
 
       <p class="text-dark-primary text-xl dark:text-white-primary">
-        I work @ sdf where I spend most of my time collecting data and developing apps.
+        I work @ <a href="https://www.sdfgroup.com" target="_blank" rel="noreferrer" class="underline">SDF (SAME Deutz-Fahr SpA)</a> where I am a team leader for the cloud development.
       </p>
 
       <div class="flex gap-4">

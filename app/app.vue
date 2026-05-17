@@ -20,6 +20,12 @@ function titleTemplate(title?: string) {
 useHead({
   title: baseTitle,
   titleTemplate,
+  script: [
+    {
+      innerHTML: `(function(){var t=localStorage.getItem('theme');document.documentElement.classList.toggle('dark',t?t==='dark':true);})();`,
+      tagPosition: 'head',
+    },
+  ],
 });
 
 useServerHead({

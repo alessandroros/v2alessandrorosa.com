@@ -17,7 +17,7 @@
         />
       </a>
       <a
-        href="https://www.w3schools.com/cs/"
+        href="https://learn.microsoft.com/en-us/dotnet/csharp/"
         target="_blank"
         rel="noreferrer"
         class="transition-transform hover:scale-110"

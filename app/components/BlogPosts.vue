@@ -13,7 +13,7 @@ const { data: list } = await useAsyncData('blog-posts', () =>
     <NuxtLink
       v-for="link in list"
       :key="link.path"
-      class="transition-300 text-xl underline"
+      class="transition duration-300 text-xl underline"
       :to="link.path"
       >{{ link.title }}</NuxtLink
     >

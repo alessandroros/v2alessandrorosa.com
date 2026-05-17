@@ -411,7 +411,7 @@ export class ProductsComponent implements OnInit {
 
 ## Advanced Features
 
-### Custom Template Customization
+### Template Customization
 
 You can customize the generated TypeScript code using liquid templates:
 

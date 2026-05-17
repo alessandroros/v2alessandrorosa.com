@@ -2,7 +2,7 @@
 import type { Project } from '~~/github';
 import type { WakatimeStatResponse } from '~~/wakatime';
 
-const title = '';
+const title = 'Alessandro Rosà — Software Developer';
 
 useHead({
   title,
@@ -22,7 +22,7 @@ useServerSeoMeta({
 
 const { data: starred } = useFetch<Project[]>('/api/github/starred');
 
-const { data: repositories } = useFetch<Project[]>('/api/github/repositories');
+//const { data: repositories } = useFetch<Project[]>('/api/github/repositories');
 
 const { data: metrics } = useFetch<WakatimeStatResponse['data']>('/api/wakatime');
 

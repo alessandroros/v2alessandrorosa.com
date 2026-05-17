@@ -115,6 +115,7 @@ export default defineNuxtConfig({
         '/blog/rogue-one-a-malware-story',
         '/blog/undergraduate-thesis',
         '/blog/why-cloud-native-postgresql-is-a-game-changer-for-kubernetes',
+        '/blog/homelab-with-proxmox-and-k3s-a-real-ha-cluster-on-mini-pcs',
         '/blog/mediatr-and-web-apis-the-perfect-match-for-clean-crud-operations',
         '/blog/nswag-a-game-changer-for-aspnet-core-and-angular-developers',
         '/lazy',
@@ -158,7 +159,7 @@ export default defineNuxtConfig({
 
   site: {
     indexable: true,
-    url: 'https://alessandror.dk',
+    url: 'https://alessandrorosa.com',
     defaultLocale: 'en',
   },
 

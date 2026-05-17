@@ -13,8 +13,8 @@ defineProps<{
 
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
       <Project
-        v-for="(project, projectIndex) of projects"
-        :key="projectIndex"
+        v-for="project of projects"
+        :key="project.name"
         :project="project"
       />
     </div>

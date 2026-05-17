@@ -605,7 +605,7 @@ public class CreateProductHandler : IRequestHandler<CreateProductCommand, Produc
 }
 ```
 
-Yes, it's more verbose than AutoMapper, but the benefits far outweigh the extra typing:
+Yes, it's more verbose than AutoMapper, but the benefits far outweigh the extra boilerplate:
 - No runtime mapping exceptions
 - Better IDE support and intellisense
 - Easier to debug
@@ -617,7 +617,7 @@ Pass the `CancellationToken` to EF Core methods. This ensures proper cancellatio
 
 ### Consider CQRS
 
-MediatR naturally encourages Command Query Responsibility Segregation (CQRS). Commands modify state, queries read state. This separation improves code clarity and can lead to performance optimizations.
+MediatR naturally encourages Command Query Responsibility Segregation (CQRS). Commands modify state, queries read state. This separation improves code clarity and can lead to performance optimizations — such as routing queries to a read-optimized database replica.
 
 ## Conclusion
 
