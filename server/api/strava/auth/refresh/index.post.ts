@@ -45,13 +45,25 @@ export default defineEventHandler(async (event) => {
   url.searchParams.set('refresh_token', refreshToken);
 
   console.info('Refreshing Strava access token...');
+
+  // Strava answers 403 when the rate limit is exhausted and 400 once a refresh
+  // token has been rotated away. Neither should take the page down with it, so
+  // the failure is reported through the same shape as "not configured".
   const response = await $fetch<{
     access_token: string;
     refresh_token: string;
   }>(url.href, { method: 'POST' }).catch((err) => {
     console.error('Failed to refresh Strava token via API:', err);
-    throw err;
+
+    return undefined;
   });
+
+  if (!response?.access_token) {
+    return {
+      access_token: null,
+      error: 'Failed to refresh Strava token',
+    };
+  }
 
   console.info('Successfully refreshed Strava token, updating Redis...');
   await kvStore

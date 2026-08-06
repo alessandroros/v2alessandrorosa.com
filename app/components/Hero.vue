@@ -6,64 +6,47 @@ defineProps<{
   languages?: WakatimeStatResponse['data']['languages'];
 }>();
 
-const hiddenLanguages = ['other', 'netrw', 'json', 'markdown'];
+// Markup, config and data formats are what an editor logs, not what you would
+// answer if someone asked what you have been writing.
+const hiddenLanguages = new Set([
+  'bash',
+  'csv',
+  'css',
+  'gitignore',
+  'html',
+  'ini',
+  'json',
+  'markdown',
+  'netrw',
+  'other',
+  'scss',
+  'text',
+  'toml',
+  'xml',
+  'yaml',
+]);
 
-const defaultLanguages = ['C#', 'HTML', 'TypeScript'];
+const defaultLanguages = ['C#', 'TypeScript', 'SQL'];
+
+const listFormatter = new Intl.ListFormat('en-GB', {
+  style: 'long',
+  type: 'conjunction',
+});
 
 function formatLanguageText(inputLanguages?: string[]) {
-  const l =
-    inputLanguages &&
-    typeof inputLanguages === 'object' &&
-    Array.isArray(inputLanguages) &&
-    inputLanguages?.length
-      ? inputLanguages
-      : defaultLanguages;
+  const source = Array.isArray(inputLanguages) && inputLanguages.length
+    ? inputLanguages
+    : defaultLanguages;
 
-  const maxLanguages = Math.min(l?.length ?? 0, 3);
+  const picked = source
+    .filter(
+      (language) => language?.length && !hiddenLanguages.has(language.toLowerCase()),
+    )
+    .slice(0, 3);
 
-  const pickedLanguages: string[] = [];
-
-  for (
-    let i = 0;
-    pickedLanguages.length < maxLanguages && i < l.length;
-    i += 1
-  ) {
-    const language = l[i];
-
-    if (
-      !language ||
-      !language.length ||
-      hiddenLanguages.includes(language.toLowerCase())
-    ) {
-      continue;
-    }
-
-    pickedLanguages.push(language);
-  }
-
-  let formatted = '';
-
-  for (let i = 0; i < pickedLanguages.length; i += 1) {
-    const language = pickedLanguages[i];
-
-    if (i === 0) {
-      formatted += language;
-    } else if (i === pickedLanguages.length - 1) {
-      if (formatted.length) {
-        formatted += ' and ';
-      }
-      formatted += language;
-    } else {
-      if (formatted.length) {
-        formatted += ', ';
-      }
-      formatted += l[i];
-    }
-  }
-
-  if (!formatted?.length) {
-    formatted = 'Rust, TypeScript and Python';
-  }
+  const formatted = listFormatter.format(
+    picked.length ? picked : defaultLanguages,
+  );
 
   return `Lately I have been writing a lot of ${formatted}.`;
 }
@@ -143,16 +126,27 @@ function easterEgg() {
       <p
         class="max-w-[62ch] text-lg leading-relaxed text-black-primary dark:text-white-primary"
       >
-        I am a software developer from Italy who loves programming and data science.
-        {{
-          formatLanguageText(languages?.map((l) => l.name) || defaultLanguages)
-        }}
+        I am a software engineer from Italy. I enjoy designing architectures
+        that stay reliable as they scale, and I keep trying whatever is new to
+        see if it earns a place.
       </p>
 
       <p
         class="max-w-[62ch] text-lg leading-relaxed text-black-primary dark:text-white-primary"
       >
-        I work @ <a href="https://www.sdfgroup.com" target="_blank" rel="noreferrer" class="text-[color:var(--accent-link)] underline">SDF (SAME Deutz-Fahr SpA)</a> where I am a team leader for the cloud development.
+        I work @
+        <a
+          class="text-[color:var(--accent-link)] underline"
+          href="https://www.sdfgroup.com"
+          target="_blank"
+          rel="noreferrer"
+          >SDF (SAME Deutz-Fahr SpA)</a
+        >
+        where I lead cloud development.
+      </p>
+
+      <p class="max-w-[62ch] text-lg leading-relaxed text-black-primary/70 dark:text-white-primary/60">
+        {{ formatLanguageText(languages?.map((l) => l.name)) }}
       </p>
 
       <div class="mt-3 flex gap-4">
