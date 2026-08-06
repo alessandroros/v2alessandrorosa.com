@@ -69,11 +69,24 @@ const year = new Date().getFullYear();
         <span class="font-mono font-medium">JetBrains Mono</span>.
       </p>
 
-      <p>
-        <span class="font-sans font-medium text-[color:var(--accent-link)]">Inter</span>
-        +
-        <span class="font-mono font-medium text-[color:var(--accent-link)]">JetBrains</span>,
-        always top.
+      <p class="flex items-center gap-2">
+        <!-- Nerazzurro device rather than the club crest: same two colours the
+             site already runs on, and no third-party trademark embedded. The
+             hairline keeps the black half readable on the dark ground. -->
+        <span
+          class="inline-flex h-3.5 w-5 shrink-0 overflow-hidden rounded-[2px] border border-surface-border"
+          aria-hidden="true"
+        >
+          <span class="w-1/2 bg-[#101010]"></span>
+          <span class="w-1/2 bg-accent"></span>
+        </span>
+
+        <span>
+          <span class="font-sans font-medium text-[color:var(--accent-link)]">Inter</span>
+          +
+          <span class="font-mono font-medium text-[color:var(--accent-link)]">JetBrains</span>,
+          always top.
+        </span>
       </p>
 
       <p>Nuxt 4 · Tailwind 4 · Cloudflare Pages</p>
