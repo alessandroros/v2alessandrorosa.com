@@ -7,16 +7,16 @@ defineProps<{
 </script>
 
 <template>
-  <section v-if="metrics?.languages?.length" class="flex flex-col gap-8">
+  <section v-if="metrics?.languages?.length" class="flex flex-col gap-6">
     <SectionTitle>What am I up to?</SectionTitle>
 
-    <p class="text-xl text-black-primary dark:text-white-primary">
+    <p class="max-w-[62ch] text-lg leading-relaxed text-black-primary dark:text-white-primary">
       This week I have been writing a lot of
       {{ metrics?.languages?.[0]?.name ?? 'Rust' }} using
       {{ metrics?.editors?.[0]?.name ?? 'Neovim' }}
     </p>
 
-    <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
       <Tile v-if="metrics?.languages?.length" class="mx-auto w-full">
         <ChartsBar :minimum-percent="0.5" :points="metrics?.languages ?? []" />
       </Tile>

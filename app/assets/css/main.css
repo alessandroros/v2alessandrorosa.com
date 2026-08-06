@@ -4,6 +4,35 @@
 
 @plugin '@tailwindcss/typography';
 
+/*
+  Self-hosted variable fonts, latin subset, served from the same origin as the
+  HTML. Three roles: Source Serif 4 for headings, Inter for body and UI,
+  JetBrains Mono for numbers and code.
+*/
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/inter-variable-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'Source Serif 4';
+  font-style: normal;
+  font-weight: 600 700;
+  font-display: swap;
+  src: url('/fonts/sourceserif4-variable-latin.woff2') format('woff2');
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url('/fonts/jetbrainsmono-variable-latin.woff2') format('woff2');
+}
+
 @theme {
   --color-black-primary: #101010;
   --color-black-secondary: #151515;
@@ -11,9 +40,27 @@
   --color-white-primary: #f7f7f7;
   --color-white-secondary: #eeeeee;
 
+  /* Brand accent. `accent` is the base tone, used for large text and
+     decorative fills. `accent-strong`/`accent-soft` are the contrast-safe
+     variants for body-sized text on light/dark backgrounds respectively. */
+  --color-accent: #3178c6;
+  --color-accent-strong: #245a94;
+  --color-accent-soft: #5ca0e0;
+
+  /* One surface system for every card. The values switch with the theme
+     further down, so `bg-surface` and `border-surface-border` work in both. */
+  --color-surface: var(--surface);
+  --color-surface-border: var(--surface-border);
+
   --font-sans:
     Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
     'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+  --font-serif: 'Source Serif 4', ui-serif, Georgia, 'Times New Roman', serif;
+
+  --font-mono:
+    'JetBrains Mono', ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo,
+    Consolas, monospace;
 }
 
 /*
@@ -35,7 +82,19 @@
 }
 
 :root {
-  --highlight: red;
+  /* Overwritten at runtime by the hero easter egg, see app/colors/index.ts */
+  --highlight: var(--color-accent);
+  --accent-link: var(--color-accent-strong);
+
+  --surface: #ffffff;
+  --surface-border: rgb(16 16 16 / 0.11);
+}
+
+.dark {
+  --accent-link: var(--color-accent-soft);
+
+  --surface: #151515;
+  --surface-border: rgb(247 247 247 / 0.13);
 }
 
 body {

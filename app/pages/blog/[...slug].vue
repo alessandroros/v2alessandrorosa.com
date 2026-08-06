@@ -50,7 +50,7 @@ useServerSeoMeta({
   <div class="flex size-full flex-col">
     <template v-if="doc">
       <article
-        class="prose prose-sm mx-auto w-full max-w-full rounded-lg p-4 sm:prose-base sm:p-8 lg:prose-xl dark:prose-invert"
+        class="prose prose-sm mx-auto w-full max-w-full rounded-lg p-4 prose-headings:font-serif prose-headings:tracking-[-0.015em] prose-a:text-[color:var(--accent-link)] prose-code:font-mono prose-pre:font-mono sm:prose-base sm:p-8 lg:prose-lg lg:max-w-[68ch] dark:prose-invert"
       >
         <h1>{{ doc.title }}</h1>
 
@@ -71,7 +71,7 @@ useServerSeoMeta({
       </article>
 
       <NuxtLink
-        class="mx-auto my-8 text-center font-bold text-black-secondary dark:text-white-secondary"
+        class="mx-auto my-8 text-center font-medium text-[color:var(--accent-link)] underline underline-offset-4"
         to="/"
       >
         Back home

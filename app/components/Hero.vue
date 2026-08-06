@@ -123,11 +123,11 @@ function easterEgg() {
 <template>
   <section
     id="about"
-    class="grid grid-cols-1 items-center gap-4 lg:grid-cols-2"
+    class="grid grid-cols-1 items-center gap-8 lg:grid-cols-2"
   >
-    <div class="flex flex-col gap-4">
+    <div class="flex flex-col gap-6">
       <h1
-        class="break-words text-5xl font-bold text-black-primary lg:text-6xl dark:text-white-primary"
+        class="font-serif text-5xl leading-[1.04] font-bold tracking-[-0.008em] break-words text-black-primary lg:text-6xl dark:text-white-primary"
       >
         <span
           class="text-[color:var(--highlight)] duration-300"
@@ -140,18 +140,22 @@ function easterEgg() {
         I'm Alessandro
       </h1>
 
-      <p class="text-xl text-black-primary dark:text-white-primary">
+      <p
+        class="max-w-[62ch] text-lg leading-relaxed text-black-primary dark:text-white-primary"
+      >
         I am a software developer from Italy who loves programming and data science.
         {{
           formatLanguageText(languages?.map((l) => l.name) || defaultLanguages)
         }}
       </p>
 
-      <p class="text-dark-primary text-xl dark:text-white-primary">
-        I work @ <a href="https://www.sdfgroup.com" target="_blank" rel="noreferrer" class="underline">SDF (SAME Deutz-Fahr SpA)</a> where I am a team leader for the cloud development.
+      <p
+        class="max-w-[62ch] text-lg leading-relaxed text-black-primary dark:text-white-primary"
+      >
+        I work @ <a href="https://www.sdfgroup.com" target="_blank" rel="noreferrer" class="text-[color:var(--accent-link)] underline">SDF (SAME Deutz-Fahr SpA)</a> where I am a team leader for the cloud development.
       </p>
 
-      <div class="flex gap-4">
+      <div class="mt-3 flex gap-4">
         <GithubLink />
 
         <LinkedInLink />

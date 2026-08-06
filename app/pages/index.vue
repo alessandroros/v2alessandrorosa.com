@@ -46,9 +46,8 @@ const featuredProjects: Project[] = [
 </script>
 
 <template>
-  <div class="flex w-full flex-col gap-12 pb-8">
+  <div class="flex w-full flex-col gap-24 pb-16">
     <Hero :languages="metrics?.languages" />
-
 
     <TechStack />
 
@@ -56,7 +55,11 @@ const featuredProjects: Project[] = [
 
     <Projects :projects="featuredProjects" title="My Projects" />
 
-    <Projects :projects="starred ?? []" title="Starred Projects" />
+    <Projects
+      :projects="starred ?? []"
+      title="Starred Projects"
+      section-id="starred-projects"
+    />
 
     <StravaStats v-if="sports && sports.length > 0" :sports="sports" />
 

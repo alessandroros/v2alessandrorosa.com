@@ -1,320 +1,88 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+// Icons are self-hosted in public/icons (devicon originals) so the section
+// does not depend on third-party CDNs and does not shift layout while loading.
+const tools = [
+  { icon: 'linux', name: 'Linux', href: 'https://www.linux.org/' },
+  {
+    icon: 'csharp',
+    name: 'C#',
+    href: 'https://learn.microsoft.com/en-us/dotnet/csharp/',
+  },
+  { icon: 'dotnetcore', name: '.NET', href: 'https://dotnet.microsoft.com/' },
+  { icon: 'angular', name: 'Angular', href: 'https://angular.dev' },
+  {
+    icon: 'javascript',
+    name: 'JavaScript',
+    href: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
+  },
+  {
+    icon: 'typescript',
+    name: 'TypeScript',
+    href: 'https://www.typescriptlang.org/',
+  },
+  { icon: 'postgresql', name: 'PostgreSQL', href: 'https://www.postgresql.org' },
+  { icon: 'redis', name: 'Redis', href: 'https://redis.io' },
+  { icon: 'docker', name: 'Docker', href: 'https://www.docker.com/' },
+  { icon: 'kubernetes', name: 'Kubernetes', href: 'https://kubernetes.io' },
+  { icon: 'git', name: 'Git', href: 'https://git-scm.com/' },
+  { icon: 'postman', name: 'Postman', href: 'https://postman.com' },
+  {
+    icon: 'apachekafka',
+    name: 'Apache Kafka',
+    href: 'https://kafka.apache.org/',
+    invertOnDark: true,
+  },
+  { icon: 'chartjs', name: 'Chart.js', href: 'https://www.chartjs.org' },
+  {
+    icon: 'css3',
+    name: 'CSS',
+    href: 'https://developer.mozilla.org/en-US/docs/Web/CSS',
+  },
+  { icon: 'd3js', name: 'D3.js', href: 'https://d3js.org/' },
+  {
+    icon: 'elasticsearch',
+    name: 'Elasticsearch',
+    href: 'https://www.elastic.co',
+  },
+  { icon: 'gatsby', name: 'Gatsby', href: 'https://www.gatsbyjs.com/' },
+  { icon: 'grafana', name: 'Grafana', href: 'https://grafana.com' },
+  {
+    icon: 'html5',
+    name: 'HTML',
+    href: 'https://developer.mozilla.org/en-US/docs/Web/HTML',
+  },
+  { icon: 'argocd', name: 'Argo CD', href: 'https://argo-cd.readthedocs.io' },
+  { icon: 'nginx', name: 'Nginx', href: 'https://www.nginx.com' },
+  { icon: 'mongodb', name: 'MongoDB', href: 'https://www.mongodb.com/' },
+  { icon: 'oracle', name: 'Oracle', href: 'https://www.oracle.com/' },
+];
+</script>
+
 <template>
-  <section id="tech-stack" class="flex flex-col gap-4">
+  <section id="tech-stack" class="flex flex-col gap-6">
     <SectionTitle> Languages and Tools </SectionTitle>
-    <div class="flex flex-wrap gap-4">
-      <a
-        href="https://www.linux.org/"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/linux/linux-original.svg"
-          alt="linux"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://learn.microsoft.com/en-us/dotnet/csharp/"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/csharp/csharp-original.svg"
-          alt="csharp"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://dotnet.microsoft.com/"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/dot-net/dot-net-original-wordmark.svg"
-          alt="dotnet"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://angular.io"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://angular.io/assets/images/logos/angular/angular.svg"
-          alt="angular"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://developer.mozilla.org/en-US/docs/Web/JavaScript"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg"
-          alt="javascript"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://www.typescriptlang.org/"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/typescript/typescript-original.svg"
-          alt="typescript"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://www.postgresql.org"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/postgresql/postgresql-original-wordmark.svg"
-          alt="postgresql"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://redis.io"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/redis/redis-original-wordmark.svg"
-          alt="redis"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://www.docker.com/"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/docker/docker-original-wordmark.svg"
-          alt="docker"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://kubernetes.io"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://www.vectorlogo.zone/logos/kubernetes/kubernetes-icon.svg"
-          alt="kubernetes"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://git-scm.com/"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://www.vectorlogo.zone/logos/git-scm/git-scm-icon.svg"
-          alt="git"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://postman.com"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://www.vectorlogo.zone/logos/getpostman/getpostman-icon.svg"
-          alt="postman"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://kafka.apache.org/"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://www.vectorlogo.zone/logos/apache_kafka/apache_kafka-ar21~bgwhite.svg"
-          alt="kafka"
-          width="80"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://www.chartjs.org"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://www.chartjs.org/media/logo-title.svg"
-          alt="chartjs"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://www.w3schools.com/css/"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original-wordmark.svg"
-          alt="css3"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://d3js.org/"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/d3js/d3js-original.svg"
-          alt="d3js"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://www.elastic.co"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://www.vectorlogo.zone/logos/elastic/elastic-icon.svg"
-          alt="elasticsearch"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://www.gatsbyjs.com/"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://www.vectorlogo.zone/logos/gatsbyjs/gatsbyjs-icon.svg"
-          alt="gatsby"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://grafana.com"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://www.vectorlogo.zone/logos/grafana/grafana-icon.svg"
-          alt="grafana"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://www.w3.org/html/"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original-wordmark.svg"
-          alt="html5"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://www.jenkins.io"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://www.vectorlogo.zone/logos/jenkins/jenkins-icon.svg"
-          alt="jenkins"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://www.nginx.com"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/nginx/nginx-original.svg"
-          alt="nginx"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://www.mongodb.com/"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/mongodb/mongodb-original-wordmark.svg"
-          alt="mongodb"
-          width="40"
-          height="40"
-        />
-      </a>
-      <a
-        href="https://www.oracle.com/"
-        target="_blank"
-        rel="noreferrer"
-        class="transition-transform hover:scale-110"
-      >
-        <img
-          src="https://raw.githubusercontent.com/devicons/devicon/master/icons/oracle/oracle-original.svg"
-          alt="oracle"
-          width="40"
-          height="40"
-        />
-      </a>
-    </div>
+
+    <ul class="flex flex-wrap gap-3">
+      <li v-for="tool of tools" :key="tool.name">
+        <a
+          class="flex size-12 items-center justify-center rounded-sm transition-transform hover:scale-110"
+          :href="tool.href"
+          :title="tool.name"
+          target="_blank"
+          rel="noreferrer"
+        >
+          <img
+            class="size-10 object-contain"
+            :class="tool.invertOnDark ? 'dark:invert' : ''"
+            :src="`/icons/${tool.icon}.svg`"
+            :alt="tool.name"
+            width="40"
+            height="40"
+            loading="lazy"
+            decoding="async"
+          />
+        </a>
+      </li>
+    </ul>
   </section>
 </template>

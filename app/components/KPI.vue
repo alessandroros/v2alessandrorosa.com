@@ -8,12 +8,12 @@ defineProps<{
 <template>
   <Tile>
     <p
-      class="text-primary-base mb-auto text-4xl font-semibold transition-all duration-200"
+      class="mb-auto font-mono text-4xl font-medium tabular-nums text-[color:var(--accent-link)] transition-all duration-200"
     >
       {{ value }}
     </p>
 
-    <p class="mt-4">
+    <p class="mt-4 text-black-primary dark:text-white-primary">
       {{ label }}
     </p>
   </Tile>
