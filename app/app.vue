@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const baseTitle = 'Alessandro Rosà | Software Engineer';
 const baseDescription =
-  'Software engineer Team Lead from Italy. Lover of all things programming - but  always learning new stuff.';
+  'Software engineer from Italy, leading cloud development at SDF. I design architectures that stay reliable as they scale.';
 const baseOgImage = '/og-image.png';
 const ogType = 'website';
 const author = 'Alessandro Rosà';

@@ -2,7 +2,7 @@
 import type { ContributionCalendar, Project } from '~~/github';
 import type { WakatimeStatResponse } from '~~/wakatime';
 
-const title = 'Alessandro Rosà — Software Developer';
+const title = 'Alessandro Rosà — Software Engineer';
 
 useHead({
   title,
@@ -61,6 +61,12 @@ const featuredProjects: Project[] = [
       class="flex flex-col gap-6"
     >
       <SectionTitle eyebrow="GitHub">Commits</SectionTitle>
+
+      <p
+        class="max-w-[62ch] text-lg leading-relaxed text-black-primary/70 dark:text-white-primary/60"
+      >
+        GitHub is not where I work, so this counts personal projects only.
+      </p>
 
       <ContributionGraph :calendar="contributions" />
     </section>

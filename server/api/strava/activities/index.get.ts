@@ -27,16 +27,16 @@ export default defineCachedEventHandler(
       return cached as unknown as Sport[];
     }
 
-    const { access_token: accessToken } = await $fetch(
-      '/api/strava/auth/refresh',
-      {
-        method: 'POST',
-      },
-    );
+    const auth = await $fetch('/api/strava/auth/refresh', {
+      method: 'POST',
+    }).catch(() => undefined);
 
-    // Return empty array if Strava is not configured
+    const accessToken = auth?.access_token;
+
+    // Strava unconfigured, rate limited, or the token could not be refreshed.
     if (!accessToken) {
       setResponseHeader(event, 'x-redis-cache', 'miss');
+
       return [];
     }
 
@@ -58,7 +58,13 @@ export default defineCachedEventHandler(
 
     weekStartDate.setHours(0, 0, 0, 0);
 
-    while (page.toString() !== url.searchParams.get('page')) {
+    // Bounds both an unterminated loop and how hard a cache miss hits Strava,
+    // whose rate limit is 100 requests per 15 minutes.
+    const maxPages = 10;
+
+    let complete = true;
+
+    while (page <= maxPages) {
       url.searchParams.set('page', page.toString());
 
       const r = await $fetch<StravaActivity[]>(url.href, {
@@ -66,87 +72,93 @@ export default defineCachedEventHandler(
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+      }).catch((err) => {
+        console.error(`Failed to fetch Strava activities page ${page}:`, err);
+
+        complete = false;
+
+        return undefined;
       });
 
-      if (r?.length) {
-        page += 1;
+      if (!r?.length) {
+        break;
+      }
 
-        for (const activity of r) {
-          if (seenIds.has(activity.id)) {
-            continue;
+      page += 1;
+
+      for (const activity of r) {
+        if (seenIds.has(activity.id)) {
+          continue;
+        }
+
+        seenIds.add(activity.id);
+
+        const existingEntry = sports?.[activity.sport_type];
+
+        const startTime = new Date(activity.start_date);
+
+        const p: SportActivity = {
+          date: startTime,
+          distance: activity.distance,
+          moving_time: activity?.moving_time,
+          elapsed_time: activity?.elapsed_time,
+        };
+
+        const isThisYear =
+          currentTime.getUTCFullYear() === startTime.getUTCFullYear();
+
+        const isThisMonth =
+          isThisYear && currentTime.getUTCMonth() === startTime.getUTCMonth();
+
+        const isThisWeek = weekStartDate <= startTime;
+
+        if (existingEntry) {
+          existingEntry.total_moving_time += activity?.moving_time || 0;
+          existingEntry.total_elapsed_time += activity?.elapsed_time || 0;
+          existingEntry.total_distance += activity.distance || 0;
+
+          if (isThisYear) {
+            existingEntry.this_year_moving_time += activity?.moving_time || 0;
+            existingEntry.this_year_elapsed_time += activity?.elapsed_time || 0;
+            existingEntry.this_year_distance += activity.distance || 0;
+
+            if (isThisMonth) {
+              existingEntry.this_month_moving_time += activity?.moving_time || 0;
+              existingEntry.this_month_elapsed_time +=
+                activity?.elapsed_time || 0;
+              existingEntry.this_month_distance += activity.distance || 0;
+            }
           }
-          seenIds.add(activity.id);
 
-          const existingEntry = sports?.[activity.sport_type];
+          if (isThisWeek) {
+            existingEntry.this_week_moving_time += activity?.moving_time || 0;
+            existingEntry.this_week_elapsed_time += activity?.elapsed_time || 0;
+            existingEntry.this_week_distance += activity.distance || 0;
+          }
 
-          const startTime = new Date(activity.start_date);
+          existingEntry.activities.push(p);
+        } else {
+          sports[activity.sport_type] = {
+            name: pascalCaseToSpaces(activity.sport_type),
 
-          const p: SportActivity = {
-            date: startTime,
-            distance: activity.distance,
-            moving_time: activity?.moving_time,
-            elapsed_time: activity?.elapsed_time,
+            total_moving_time: activity?.moving_time || 0,
+            total_elapsed_time: activity?.elapsed_time || 0,
+            total_distance: activity.distance || 0,
+
+            this_year_moving_time: isThisYear ? activity?.moving_time : 0,
+            this_year_elapsed_time: isThisYear ? activity?.elapsed_time : 0,
+            this_year_distance: isThisYear ? activity.distance : 0,
+
+            this_month_moving_time: isThisMonth ? activity?.moving_time : 0,
+            this_month_elapsed_time: isThisMonth ? activity?.elapsed_time : 0,
+            this_month_distance: isThisMonth ? activity.distance : 0,
+
+            this_week_moving_time: isThisWeek ? activity?.moving_time : 0,
+            this_week_elapsed_time: isThisWeek ? activity?.elapsed_time : 0,
+            this_week_distance: isThisWeek ? activity.distance : 0,
+
+            activities: [p],
           };
-
-          const isThisYear =
-            currentTime.getUTCFullYear() === startTime.getUTCFullYear();
-
-          const isThisMonth =
-            isThisYear && currentTime.getUTCMonth() === startTime.getUTCMonth();
-
-          const isThisWeek = weekStartDate <= startTime;
-
-          if (existingEntry) {
-            existingEntry.total_moving_time += activity?.moving_time || 0;
-            existingEntry.total_elapsed_time += activity?.elapsed_time || 0;
-            existingEntry.total_distance += activity.distance || 0;
-
-            if (isThisYear) {
-              existingEntry.this_year_moving_time += activity?.moving_time || 0;
-              existingEntry.this_year_elapsed_time +=
-                activity?.elapsed_time || 0;
-              existingEntry.this_year_distance += activity.distance || 0;
-
-              if (isThisMonth) {
-                existingEntry.this_month_moving_time +=
-                  activity?.moving_time || 0;
-                existingEntry.this_month_elapsed_time +=
-                  activity?.elapsed_time || 0;
-                existingEntry.this_month_distance += activity.distance || 0;
-              }
-            }
-
-            if (isThisWeek) {
-              existingEntry.this_week_moving_time += activity?.moving_time || 0;
-              existingEntry.this_week_elapsed_time +=
-                activity?.elapsed_time || 0;
-              existingEntry.this_week_distance += activity.distance || 0;
-            }
-
-            existingEntry.activities.push(p);
-          } else {
-            sports[activity.sport_type] = {
-              name: pascalCaseToSpaces(activity.sport_type),
-
-              total_moving_time: activity?.moving_time || 0,
-              total_elapsed_time: activity?.elapsed_time || 0,
-              total_distance: activity.distance || 0,
-
-              this_year_moving_time: isThisYear ? activity?.moving_time : 0,
-              this_year_elapsed_time: isThisYear ? activity?.elapsed_time : 0,
-              this_year_distance: isThisYear ? activity.distance : 0,
-
-              this_month_moving_time: isThisMonth ? activity?.moving_time : 0,
-              this_month_elapsed_time: isThisMonth ? activity?.elapsed_time : 0,
-              this_month_distance: isThisMonth ? activity.distance : 0,
-
-              this_week_moving_time: isThisWeek ? activity?.moving_time : 0,
-              this_week_elapsed_time: isThisWeek ? activity?.elapsed_time : 0,
-              this_week_distance: isThisWeek ? activity.distance : 0,
-
-              activities: [p],
-            };
-          }
         }
       }
     }
@@ -159,7 +171,9 @@ export default defineCachedEventHandler(
       k.activities.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     }
 
-    if (s?.length) {
+    // Only a full walk of the pages gets cached: storing a partial result
+    // would pin wrong totals for the whole cache window.
+    if (complete && s?.length) {
       kvStore
         .setex(cacheKey, REDIS_CACHE_DURATION, JSON.stringify(s))
         .catch(() => undefined);
