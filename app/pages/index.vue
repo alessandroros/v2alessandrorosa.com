@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Project } from '~~/github';
+import type { ContributionCalendar, Project } from '~~/github';
 import type { WakatimeStatResponse } from '~~/wakatime';
 
 const title = 'Alessandro Rosà — Software Developer';
@@ -26,6 +26,10 @@ const { data: starred } = useFetch<Project[]>('/api/github/starred');
 
 const { data: metrics } = useFetch<WakatimeStatResponse['data']>('/api/wakatime');
 
+const { data: contributions } = useFetch<ContributionCalendar>(
+  '/api/github/contributions',
+);
+
 const { data: sports } = useFetch('/api/strava/activities');
 
 const featuredProjects: Project[] = [
@@ -50,6 +54,16 @@ const featuredProjects: Project[] = [
     <Hero :languages="metrics?.languages" />
 
     <TechStack />
+
+    <section
+      v-if="contributions?.weeks?.length"
+      id="contributions"
+      class="flex flex-col gap-6"
+    >
+      <SectionTitle eyebrow="GitHub">Commits</SectionTitle>
+
+      <ContributionGraph :calendar="contributions" />
+    </section>
 
     <ProgrammingMetrics v-if="metrics" :metrics="metrics" />
 
