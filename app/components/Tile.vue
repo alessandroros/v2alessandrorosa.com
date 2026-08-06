@@ -1,7 +1,5 @@
 <template>
-  <div
-    class="rounded-sm bg-white-secondary p-4 dark:border dark:border-[#444] dark:bg-black-secondary"
-  >
+  <div class="rounded-md border border-surface-border bg-surface p-4">
     <slot></slot>
   </div>
 </template>

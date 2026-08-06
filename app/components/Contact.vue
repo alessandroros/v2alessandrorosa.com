@@ -1,26 +1,26 @@
 <template>
-  <section id="contact" class="flex flex-col gap-2">
-    <SectionTitle>Wanna get in touch?</SectionTitle>
+  <section id="contact" class="flex flex-col gap-6">
+    <SectionTitle eyebrow="Contact">Wanna get in touch?</SectionTitle>
 
-    <p class="text-xl text-black-primary dark:text-white-primary">
+    <p class="text-lg text-black-primary dark:text-white-primary">
       I am always available for exciting discussions
     </p>
 
-    <div>
-      <div class="my-2 flex items-center gap-2">
+    <div class="flex flex-col gap-3">
+      <div class="flex items-center gap-2">
         <IconsEmail height="20" width="20" />
 
         <a
-          class="text-xl text-black-primary underline dark:text-white-primary"
+          class="text-lg text-[color:var(--accent-link)] underline underline-offset-4"
           href="mailto:info@alessandrorosa.com"
           >info@alessandrorosa.com</a
         >
       </div>
 
-      <div class="mb-4 flex items-center gap-2">
+      <div class="flex items-center gap-2">
         <IconsPin height="20" width="20" />
 
-        <p class="text-xl text-black-primary dark:text-white-primary">
+        <p class="text-lg text-black-primary dark:text-white-primary">
           Trento, Italy
         </p>
       </div>

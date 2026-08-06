@@ -33,18 +33,21 @@ export default defineNuxtConfig({
           href: '/safari-pinned-tab.svg',
           rel: 'mask-icon',
         },
+        // Fonts are self-hosted from /public/fonts. The two used above the
+        // fold are preloaded; JetBrains Mono loads on demand.
         {
-          href: 'https://fonts.googleapis.com',
-          rel: 'preconnect',
-        },
-        {
+          as: 'font',
           crossorigin: '',
-          href: 'https://fonts.gstatic.com',
-          rel: 'preconnect',
+          href: '/fonts/inter-variable-latin.woff2',
+          rel: 'preload',
+          type: 'font/woff2',
         },
         {
-          href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
-          rel: 'stylesheet',
+          as: 'font',
+          crossorigin: '',
+          href: '/fonts/sourceserif4-variable-latin.woff2',
+          rel: 'preload',
+          type: 'font/woff2',
         },
       ],
       meta: [
@@ -119,9 +122,6 @@ export default defineNuxtConfig({
         '/blog/mediatr-and-web-apis-the-perfect-match-for-clean-crud-operations',
         '/blog/nswag-a-game-changer-for-aspnet-core-and-angular-developers',
         '/lazy',
-        '/leetcode',
-        '/npm-packages',
-        '/rust-packages',
       ],
     },
   },
@@ -147,8 +147,6 @@ export default defineNuxtConfig({
   runtimeConfig: {
     githubApiKey: process?.env?.NUXT_GITHUB_API_KEY,
     githubUsername: process?.env?.NUXT_GITHUB_USERNAME,
-    leetcodeUsername: process?.env?.NUXT_LEETCODE_USERNAME,
-    npmUsername: process?.env?.NUXT_NPM_USERNAME,
     stravaClientId: process?.env?.NUXT_STRAVA_CLIENT_ID,
     stravaClientSecret: process?.env?.NUXT_STRAVA_CLIENT_SECRET,
     stravaRefreshToken: process?.env?.NUXT_STRAVA_REFRESH_TOKEN,

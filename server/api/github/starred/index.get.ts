@@ -51,7 +51,7 @@ export default defineCachedEventHandler(
         method: 'POST',
         headers: {
           authorization: `Bearer ${config.githubApiKey}`,
-          'user-agent': 'MadsHougesen +http://mhouge.dk',
+          'user-agent': 'AlessandroRosa +https://alessandrorosa.com',
         },
         body: {
           query: `

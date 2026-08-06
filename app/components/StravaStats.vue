@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Sport } from '~~/strava';
+import { secondsToHoursMinutes, type Sport } from '~~/strava';
 
 const props = defineProps<{
   sports: Sport[];
@@ -13,75 +13,63 @@ const totalWeeklyMinutes = computed(() => {
   return m / 60;
 });
 
-const toHoursMinutes = (seconds: number) => {
-  const totalMinutes = Math.floor(seconds / 60);
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-
-  if (hours === 0) {
-    return `${minutes}m`;
-  }
-
-  return `${hours}h ${minutes}m`;
-};
 </script>
 
 <template>
-  <section v-if="sports?.length" id="strava-stats" class="flex flex-col gap-8">
-    <SectionTitle>
-      Weekly Activity Stats 🏃‍♂️
-    </SectionTitle>
+  <section v-if="sports?.length" id="strava-stats" class="flex flex-col gap-6">
+    <SectionTitle eyebrow="Strava"> Weekly Activity Stats 🏃‍♂️ </SectionTitle>
 
-    <div class="mb-4">
-      <p class="text-dark-primary dark:text-white-primary text-lg">
-        This week: <span class="font-semibold">{{ Math.floor(totalWeeklyMinutes) }} minutes</span>
-        <span v-if="totalWeeklyMinutes >= 60 * 7" class="ml-2">💪 Goal achieved!</span>
-        <span v-else class="ml-2">📊 {{ Math.floor((60 * 7) - totalWeeklyMinutes) }} min to weekly goal</span>
-      </p>
-    </div>
+    <p class="text-lg text-black-primary dark:text-white-primary">
+      This week:
+      <span class="font-mono font-medium tabular-nums text-[color:var(--accent-link)]"
+        >{{ Math.floor(totalWeeklyMinutes) }} minutes</span
+      >
+      <span v-if="totalWeeklyMinutes >= 60 * 7" class="ml-2">💪 Goal achieved!</span>
+      <span v-else class="ml-2">📊 {{ Math.floor((60 * 7) - totalWeeklyMinutes) }} min to weekly goal</span>
+    </p>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
       <div
         v-for="(sport, sportIndex) of sports"
         :key="sportIndex"
-        class="flex flex-col gap-4 rounded-lg border border-gray-200 p-6 dark:border-gray-700"
+        class="flex flex-col gap-4 rounded-md border border-surface-border bg-surface p-6"
       >
-        <h3 class="text-xl font-semibold capitalize text-dark-primary dark:text-white-primary">
+        <h3 class="text-lg font-semibold capitalize text-black-primary dark:text-white-primary">
           {{ sport.name }}
         </h3>
 
         <div class="grid grid-cols-2 gap-3">
           <div class="flex flex-col">
-            <span class="text-sm text-gray-600 dark:text-gray-400">This Week</span>
-            <span class="text-lg font-semibold text-dark-primary dark:text-white-primary">
-              {{ toHoursMinutes(sport.this_week_elapsed_time) }}
+            <span class="text-sm text-black-primary/70 dark:text-white-primary/60">This Week</span>
+            <span class="font-mono text-lg font-medium tabular-nums text-black-primary dark:text-white-primary">
+              {{ secondsToHoursMinutes(sport.this_week_elapsed_time) }}
             </span>
           </div>
 
           <div class="flex flex-col">
-            <span class="text-sm text-gray-600 dark:text-gray-400">This Month</span>
-            <span class="text-lg font-semibold text-dark-primary dark:text-white-primary">
-              {{ toHoursMinutes(sport.this_month_elapsed_time) }}
+            <span class="text-sm text-black-primary/70 dark:text-white-primary/60">This Month</span>
+            <span class="font-mono text-lg font-medium tabular-nums text-black-primary dark:text-white-primary">
+              {{ secondsToHoursMinutes(sport.this_month_elapsed_time) }}
             </span>
           </div>
 
           <div v-if="sport?.this_week_distance" class="flex flex-col">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Distance (Week)</span>
-            <span class="text-lg font-semibold text-dark-primary dark:text-white-primary">
+            <span class="text-sm text-black-primary/70 dark:text-white-primary/60">Distance (Week)</span>
+            <span class="font-mono text-lg font-medium tabular-nums text-black-primary dark:text-white-primary">
               {{ Math.floor(sport.this_week_distance / 1000) }}km
             </span>
           </div>
 
           <div v-if="sport?.this_month_distance" class="flex flex-col">
-            <span class="text-sm text-gray-600 dark:text-gray-400">Distance (Month)</span>
-            <span class="text-lg font-semibold text-dark-primary dark:text-white-primary">
+            <span class="text-sm text-black-primary/70 dark:text-white-primary/60">Distance (Month)</span>
+            <span class="font-mono text-lg font-medium tabular-nums text-black-primary dark:text-white-primary">
               {{ Math.floor(sport.this_month_distance / 1000) }}km
             </span>
           </div>
         </div>
 
-        <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-          Total: {{ toHoursMinutes(sport.total_elapsed_time) }}
+        <div class="mt-2 font-mono text-sm tabular-nums text-black-primary/70 dark:text-white-primary/60">
+          Total: {{ secondsToHoursMinutes(sport.total_elapsed_time) }}
           <span v-if="sport?.total_distance">
             · {{ Math.floor(sport.total_distance / 1000) }}km
           </span>

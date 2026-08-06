@@ -65,9 +65,13 @@ useServerSeoMeta({
 </script>
 
 <template>
-  <div class="container mx-auto flex h-full min-h-screen flex-col px-4 sm:px-8 py-4">
+  <div class="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-4 sm:px-8">
     <Navigation />
 
-    <NuxtPage />
+    <main class="flex w-full flex-1 flex-col">
+      <NuxtPage />
+    </main>
+
+    <Footer />
   </div>
 </template>

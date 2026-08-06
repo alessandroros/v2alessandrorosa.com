@@ -1,7 +1,22 @@
+<script setup lang="ts">
+defineProps<{
+  eyebrow?: string;
+}>();
+</script>
+
 <template>
-  <h2
-    class="text-4xl font-bold text-black-primary lg:text-5xl dark:text-white-primary"
-  >
-    <slot></slot>
-  </h2>
+  <div class="flex flex-col gap-2">
+    <p
+      v-if="eyebrow"
+      class="text-xs font-semibold tracking-[0.09em] text-[color:var(--accent-link)] uppercase"
+    >
+      {{ eyebrow }}
+    </p>
+
+    <h2
+      class="font-serif text-3xl font-semibold tracking-[-0.015em] text-balance text-black-primary dark:text-white-primary"
+    >
+      <slot></slot>
+    </h2>
+  </div>
 </template>

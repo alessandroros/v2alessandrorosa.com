@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { secondsToHHMMSS } from '~~/strava';
+import { secondsToHoursMinutes } from '~~/strava';
 
 const title = 'Weekly Activity Stats';
 
@@ -35,7 +35,7 @@ const hasData = computed(() => sports.value && Object.keys(sports.value).length 
 </script>
 
 <template>
-  <div class="flex w-full flex-col gap-12 pb-8">
+  <div class="flex w-full flex-col gap-24 pb-16">
     <SectionTitle v-if="hasData">
       Have I been lazy this week? {{ totalMinutes < 60 * 7 ? 'Yes!' : 'No!' }}
     </SectionTitle>
@@ -44,36 +44,36 @@ const hasData = computed(() => sports.value && Object.keys(sports.value).length 
       Weekly Activity Stats
     </SectionTitle>
 
-    <p v-if="!hasData" class="text-dark-primary dark:text-white-primary">
+    <p v-if="!hasData" class="max-w-[62ch] text-lg leading-relaxed text-black-primary dark:text-white-primary">
       Strava integration is not configured. To enable activity tracking, set up your Strava API credentials.
     </p>
 
     <section
       v-for="(sport, sportIndex) of sports"
       :key="sportIndex"
-      class="flex flex-col gap-4"
+      class="flex flex-col gap-6"
     >
       <SectionTitle class="capitalize">{{ sport.name }}</SectionTitle>
 
       <KPIGrid>
         <KPI
           label="Total time"
-          :value="secondsToHHMMSS(sport.total_elapsed_time)"
+          :value="secondsToHoursMinutes(sport.total_elapsed_time)"
         />
 
         <KPI
           label="Time this year"
-          :value="secondsToHHMMSS(sport.this_year_elapsed_time)"
+          :value="secondsToHoursMinutes(sport.this_year_elapsed_time)"
         />
 
         <KPI
           label="Time this month"
-          :value="secondsToHHMMSS(sport.this_month_elapsed_time)"
+          :value="secondsToHoursMinutes(sport.this_month_elapsed_time)"
         />
 
         <KPI
           label="Time this week"
-          :value="secondsToHHMMSS(sport.this_week_elapsed_time)"
+          :value="secondsToHoursMinutes(sport.this_week_elapsed_time)"
         />
 
         <KPI

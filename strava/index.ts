@@ -14,15 +14,23 @@ export function pascalCaseToSpaces(name: string) {
   return joined;
 }
 
-export function secondsToHHMMSS(totalSeconds: number) {
-  const hours = Math.floor(totalSeconds / 3600);
+/**
+ * Formats a duration down to the minute, rounded to the nearest one.
+ *
+ * Seconds carry no meaning for weekly training totals and made the KPI values
+ * long enough to wrap, so they are dropped rather than truncated silently.
+ */
+export function secondsToHoursMinutes(totalSeconds: number) {
+  const totalMinutes = Math.round((totalSeconds ?? 0) / 60);
 
-  const remainingSeconds = totalSeconds % 3600;
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
 
-  const minutes = Math.floor(remainingSeconds / 60);
-  const seconds = remainingSeconds % 60;
+  if (hours === 0) {
+    return `${minutes}m`;
+  }
 
-  return `${hours}h:${minutes}m:${seconds}s`;
+  return `${hours}h ${minutes}m`;
 }
 
 export type SportActivity = {
