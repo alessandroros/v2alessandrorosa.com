@@ -11,3 +11,19 @@ export type Project = {
   url: string;
   stargazerCount: number;
 };
+
+export type ContributionDay = {
+  /** ISO date, `YYYY-MM-DD`. */
+  date: string;
+  count: number;
+  /** 0 = Sunday, as returned by GitHub. Used to align the first column. */
+  weekday: number;
+};
+
+export type ContributionCalendar = {
+  total: number;
+  /** Busiest single day, used to scale the colour ramp. */
+  max: number;
+  /** One entry per calendar week, oldest first. Edge weeks may be partial. */
+  weeks: Array<Array<ContributionDay>>;
+};
