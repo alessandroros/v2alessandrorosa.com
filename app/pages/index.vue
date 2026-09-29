@@ -20,7 +20,9 @@ useServerSeoMeta({
   title,
 });
 
-const { data: starred } = useFetch<Project[]>('/api/github/starred');
+const { data: starred } = useFetch<Project[]>('/api/github/starred', {
+  server: false,
+});
 
 //const { data: repositories } = useFetch<Project[]>('/api/github/repositories');
 
@@ -28,9 +30,8 @@ const { data: metrics } = useFetch<WakatimeStatResponse['data']>('/api/wakatime'
 
 const { data: contributions } = useFetch<ContributionCalendar>(
   '/api/github/contributions',
+  { server: false },
 );
-
-const { data: sports } = useFetch('/api/strava/activities');
 
 const featuredProjects: Project[] = [
   {
@@ -80,8 +81,6 @@ const featuredProjects: Project[] = [
       title="Starred Projects"
       section-id="starred-projects"
     />
-
-    <StravaStats v-if="sports && sports.length > 0" :sports="sports" />
 
     <BlogPosts />
 

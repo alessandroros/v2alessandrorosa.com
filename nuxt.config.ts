@@ -121,7 +121,6 @@ export default defineNuxtConfig({
         '/blog/homelab-with-proxmox-and-k3s-a-real-ha-cluster-on-mini-pcs',
         '/blog/mediatr-and-web-apis-the-perfect-match-for-clean-crud-operations',
         '/blog/nswag-a-game-changer-for-aspnet-core-and-angular-developers',
-        '/lazy',
       ],
     },
   },
@@ -147,9 +146,6 @@ export default defineNuxtConfig({
   runtimeConfig: {
     githubApiKey: process?.env?.NUXT_GITHUB_API_KEY,
     githubUsername: process?.env?.NUXT_GITHUB_USERNAME,
-    stravaClientId: process?.env?.NUXT_STRAVA_CLIENT_ID,
-    stravaClientSecret: process?.env?.NUXT_STRAVA_CLIENT_SECRET,
-    stravaRefreshToken: process?.env?.NUXT_STRAVA_REFRESH_TOKEN,
     upstashRedisRestToken: process?.env?.NUXT_UPSTASH_REDIS_REST_TOKEN,
     upstashRedisRestUrl: process?.env?.NUXT_UPSTASH_REDIS_REST_URL,
     wakatimeApiKey: process?.env?.NUXT_WAKATIME_API_KEY,

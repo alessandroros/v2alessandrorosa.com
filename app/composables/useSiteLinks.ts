@@ -13,7 +13,6 @@ export type SiteLink = {
 export function useSiteLinks(): SiteLink[] {
   return [
     { label: 'Blog', to: '/#blog' },
-    { label: 'Activity', to: '/lazy' },
     { label: 'Contact', to: '/#contact' },
   ];
 }

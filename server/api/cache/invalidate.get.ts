@@ -18,7 +18,6 @@ export default defineEventHandler(async (event) => {
       'github:repositories',
       `github:contributions:${config.githubUsername}`,
     ],
-    strava: ['strava:activities'],
     wakatime: ['wakatime:stats'],
     npm: [`npm:packages:${config.npmUsername}`],
     leetcode: [`leetcode:stats:${config.leetcodeUsername}`],
@@ -34,7 +33,7 @@ export default defineEventHandler(async (event) => {
     keysToDelete = Object.values(cacheKeys).flat();
   } else {
     return {
-      error: 'Invalid target. Use: github, strava, wakatime, npm, leetcode, or all',
+      error: 'Invalid target. Use: github, wakatime, npm, leetcode, or all',
       available: Object.keys(cacheKeys).concat(['all']),
     };
   }

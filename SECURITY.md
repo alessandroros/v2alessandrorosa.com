@@ -16,17 +16,7 @@ Your repository contains several API keys and secrets that should **NEVER** be c
    - If exposed: Someone could read/write/delete your cached data, potentially incurring costs
    - **Action if leaked**: Regenerate at https://console.upstash.com/
 
-3. **Strava Client Secret**: `NUXT_STRAVA_CLIENT_SECRET`
-   - OAuth credentials for Strava API
-   - If exposed: Someone could impersonate your application
-   - **Action if leaked**: Regenerate at https://www.strava.com/settings/api
-
-4. **Strava Refresh Token**: `NUXT_STRAVA_REFRESH_TOKEN`
-   - Used to access your Strava data
-   - If exposed: Someone could access your Strava activities
-   - **Action if leaked**: Revoke and regenerate at Strava settings
-
-5. **GitHub API Key** (if you add one): `NUXT_GITHUB_API_KEY`
+3. **GitHub API Key** (if you add one): `NUXT_GITHUB_API_KEY`
    - Personal access token
    - If exposed: Someone could access repositories and data on your behalf
    - **Action if leaked**: Revoke at https://github.com/settings/tokens
@@ -41,7 +31,6 @@ Your repository contains several API keys and secrets that should **NEVER** be c
 
 ### Public Information (Safe to Commit)
 - ✅ `NUXT_GITHUB_USERNAME` - This is public anyway
-- ✅ `NUXT_STRAVA_CLIENT_ID` - OAuth client IDs are meant to be public
 - ✅ `NUXT_UPSTASH_REDIS_REST_URL` - The URL alone is not sensitive
 
 ## 📋 Checklist Before Pushing to GitHub
@@ -119,7 +108,6 @@ git grep -i "api_key\|secret\|token\|password" -- '*.ts' '*.js' '*.vue'
 ### 2. Limit API Key Permissions
 - **GitHub PAT**: Use fine-grained tokens with minimum required scopes
 - **WakaTime**: Regenerate keys regularly
-- **Strava**: Use read-only scopes where possible
 
 ### 3. Rotate Secrets Regularly
 - Change API keys every 3-6 months
@@ -130,7 +118,6 @@ git grep -i "api_key\|secret\|token\|password" -- '*.ts' '*.js' '*.vue'
 
 ### 4. Monitor API Usage
 - **Upstash**: Check usage dashboard for unexpected spikes
-- **Strava**: Monitor API rate limits
 - **GitHub**: Check API rate limit usage
 
 ### 5. Use Secret Management Tools (Advanced)

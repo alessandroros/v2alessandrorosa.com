@@ -2,12 +2,11 @@
 # Usage: .\invalidate-cache.ps1 [target]
 # Examples:
 #   .\invalidate-cache.ps1 github
-#   .\invalidate-cache.ps1 strava
 #   .\invalidate-cache.ps1 all
 
 param(
     [Parameter(Mandatory=$false)]
-    [ValidateSet('github', 'strava', 'wakatime', 'npm', 'leetcode', 'all')]
+    [ValidateSet('github', 'wakatime', 'npm', 'leetcode', 'all')]
     [string]$Target = 'all'
 )
 

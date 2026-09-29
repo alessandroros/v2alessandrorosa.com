@@ -27,7 +27,6 @@ empty `.env` while you work on the layout.
 | --------------------------------------------------------------------------------- | ------------------------------------------- |
 | `NUXT_GITHUB_USERNAME`, `NUXT_GITHUB_API_KEY`                                     | Starred repositories on the home page       |
 | `NUXT_WAKATIME_API_KEY`                                                           | Programming metrics, hero language sentence |
-| `NUXT_STRAVA_CLIENT_ID`, `NUXT_STRAVA_CLIENT_SECRET`, `NUXT_STRAVA_REFRESH_TOKEN` | Activity stats (`/lazy`)                    |
 | `NUXT_UPSTASH_REDIS_REST_URL`, `NUXT_UPSTASH_REDIS_REST_TOKEN`                    | API response caching                        |
 
 ### Run
@@ -59,10 +58,10 @@ There is also a [justfile](./justfile) wrapping the common combinations —
 app/
   components/   Vue components (Hero, Projects, TechStack, KPI, Footer, …)
   composables/  Shared site data, e.g. the nav and footer link list
-  pages/        Routes — home, blog/[...slug], lazy
+  pages/        Routes — home, blog/[...slug]
   assets/css/   Tailwind entry point and design tokens
 content/blog/   Blog posts as markdown, rendered by Nuxt Content
-server/api/     Server routes proxying GitHub, Strava and WakaTime
+server/api/     Server routes proxying GitHub and WakaTime
 public/fonts/   Self-hosted variable fonts (latin subset)
 public/icons/   Self-hosted tech stack icons
 ```
