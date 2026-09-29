@@ -162,6 +162,7 @@ export default defineNuxtConfig({
     credits: false,
     discoverImages: true,
     enabled: true,
+    sources: ['/api/__sitemap__/urls'],
   },
 
   ssr: true,

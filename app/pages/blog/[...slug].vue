@@ -44,6 +44,28 @@ useServerSeoMeta({
   twitterDescription: doc.value?.description,
   twitterTitle: doc.value?.title,
 });
+
+useSchemaOrg([
+  defineArticle({
+    headline: doc.value?.title,
+    description: doc.value?.description,
+    ...(dates.value.created
+      ? { datePublished: dates.value.created.toISOString() }
+      : {}),
+    ...(dates.value.modified
+      ? { dateModified: dates.value.modified.toISOString() }
+      : {}),
+    author: {
+      name: 'Alessandro Rosà',
+      url: 'https://alessandrorosa.com',
+    },
+  }),
+]);
+
+defineOgImageComponent('NuxtSeo', {
+  title: doc.value?.title,
+  description: doc.value?.description,
+});
 </script>
 
 <template>

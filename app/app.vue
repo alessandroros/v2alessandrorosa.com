@@ -62,6 +62,25 @@ useServerSeoMeta({
   twitterCreator,
   twitterSite,
 });
+
+useSchemaOrg([
+  definePerson({
+    name: 'Alessandro Rosà',
+    jobTitle: 'Software Engineer',
+    description: baseDescription,
+    image: '/alessandro_rosa.png',
+    sameAs: [
+      'https://github.com/alessandroros',
+      'https://www.linkedin.com/in/alessandrorosa/',
+      'https://twitter.com/alessandroburns',
+    ],
+  }),
+  defineWebSite({
+    name: ogSiteName,
+    description: baseDescription,
+  }),
+  defineWebPage(),
+]);
 </script>
 
 <template>
