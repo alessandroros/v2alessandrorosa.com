@@ -109,7 +109,7 @@ function easterEgg() {
     class="grid grid-cols-1 items-center gap-8 lg:grid-cols-2"
   >
     <div class="flex flex-col gap-6">
-      <h1
+      <h2
         class="font-serif text-5xl leading-[1.04] font-bold tracking-[-0.008em] break-words text-black-primary lg:text-6xl dark:text-white-primary"
       >
         <span
@@ -121,7 +121,7 @@ function easterEgg() {
           >Hi,</span
         >
         I'm Alessandro
-      </h1>
+      </h2>
 
       <p
         class="max-w-[62ch] text-lg leading-relaxed text-black-primary dark:text-white-primary"
