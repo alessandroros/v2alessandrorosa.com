@@ -1,0 +1,17 @@
+{
+  "width": 640,
+  "height": 824,
+  "bounds": {
+    "north": 46.29,
+    "south": 46.115,
+    "west": 10.78,
+    "east": 10.975
+  },
+  "sizeMeters": {
+    "x": 15024,
+    "z": 19350
+  },
+  "minHeight": 804,
+  "maxHeight": 3142,
+  "source": "Terrain Tiles on AWS Open Data (Terrarium), zoom 13"
+}
