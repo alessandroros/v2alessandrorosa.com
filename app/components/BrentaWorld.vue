@@ -59,8 +59,8 @@ const romeHour = (d: Date) => {
 };
 
 const now = ref(new Date());
-// The lantern cycles: live → sunset (enrosadira) → night → live.
-const SCENES = [null, 'sunset', 'night'] as const;
+// The lantern cycles: live → midday → sunset (enrosadira) → night → live.
+const SCENES = [null, 'day', 'sunset', 'night'] as const;
 const sceneIndex = ref(0);
 const simWeather = ref<WeatherPreset>('live');
 const live = ref<Weather>({
@@ -73,6 +73,11 @@ const live = ref<Weather>({
 const date = computed(() => {
   const mode = SCENES[sceneIndex.value];
   if (!mode) return now.value;
+  if (mode === 'day') {
+    return new Date(
+      now.value.getTime() + (12.5 - romeHour(now.value)) * 3600e3,
+    );
+  }
   // Search today for the sun height we want, at the Brenta.
   const target = mode === 'sunset' ? 2.5 : -20;
   let best = now.value;
@@ -201,9 +206,7 @@ onBeforeUnmount(() => {
 });
 
 const peakName = (id: string) => PEAKS.find((p) => p.id === id);
-const sceneLabel = computed(
-  () => ['live', 'sunset', 'night'][sceneIndex.value],
-);
+const sceneLabel = computed(() => SCENES[sceneIndex.value] ?? 'live');
 </script>
 
 <template>
@@ -294,6 +297,36 @@ const sceneLabel = computed(
         </ul>
       </nav>
     </div>
+
+    <!-- Data credits: required by the licences of the sources. -->
+    <p
+      class="pointer-events-auto absolute right-4 bottom-1 z-10 font-mono text-[9.5px] tracking-[0.04em] opacity-55 sm:right-8 lg:right-12"
+    >
+      Terrain:
+      <a
+        class="underline"
+        href="https://registry.opendata.aws/terrain-tiles/"
+        target="_blank"
+        rel="noreferrer"
+        >AWS Terrain Tiles</a
+      >
+      · Orthophoto 2015 ©
+      <a
+        class="underline"
+        href="https://www.provincia.tn.it/News/Approfondimenti/Ortofoto-digitale-2015"
+        target="_blank"
+        rel="noreferrer"
+        >Provincia autonoma di Trento</a
+      >
+      · Weather:
+      <a
+        class="underline"
+        href="https://open-meteo.com/"
+        target="_blank"
+        rel="noreferrer"
+        >Open-Meteo</a
+      >
+    </p>
 
     <!-- Bottom bar: live summit station and modes -->
     <div

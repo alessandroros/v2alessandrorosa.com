@@ -85,6 +85,66 @@ function sharpenWalls(meta: TerrainMeta, raw: Uint16Array): Float32Array {
   return out;
 }
 
+interface OrthoMeta {
+  cols: number;
+  rows: number;
+  tileWidth: number;
+  tileHeight: number;
+}
+
+/**
+ * Stitches the orthophoto tiles (scripts/bake-ortho.py) into one texture.
+ * Resolves to null when the tiles are missing, so the painted terrain is
+ * used instead.
+ */
+export async function loadOrtho(
+  maxSize: number,
+  anisotropy: number,
+): Promise<THREE.Texture | null> {
+  try {
+    const meta = await $fetch<OrthoMeta>('/terrain/ortho.json');
+    const fullW = meta.cols * meta.tileWidth;
+    const fullH = meta.rows * meta.tileHeight;
+    const scale = Math.min(1, maxSize / Math.max(fullW, fullH));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(fullW * scale);
+    canvas.height = Math.round(fullH * scale);
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    const jobs: Promise<void>[] = [];
+    for (let r = 0; r < meta.rows; r++) {
+      for (let c = 0; c < meta.cols; c++) {
+        jobs.push(
+          fetch(`/terrain/ortho/r${r}c${c}.jpg`)
+            .then((res) => {
+              if (!res.ok)
+                throw new Error(`ortho tile ${r},${c}: ${res.status}`);
+              return res.blob();
+            })
+            .then((blob) => createImageBitmap(blob))
+            .then((img) => {
+              ctx.drawImage(
+                img,
+                Math.round(c * meta.tileWidth * scale),
+                Math.round(r * meta.tileHeight * scale),
+                Math.ceil(meta.tileWidth * scale),
+                Math.ceil(meta.tileHeight * scale),
+              );
+              img.close();
+            }),
+        );
+      }
+    }
+    await Promise.all(jobs);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = anisotropy;
+    return texture;
+  } catch {
+    return null;
+  }
+}
+
 export const scaleHeight = (h: number) => BASE + (h - BASE) * EXAGGERATION;
 
 /** Inverse of scaleHeight: the real altitude in metres of a world y. */
@@ -151,6 +211,7 @@ export function paintTerrain(geometry: THREE.BufferGeometry, snowLine: number) {
   const pos = geometry.getAttribute('position');
   const nor = geometry.getAttribute('normal');
   const colors = new Float32Array(pos.count * 3);
+  const snowCover = new Float32Array(pos.count);
   const c = new THREE.Color();
   const tmp = new THREE.Color();
   const cols = geometry.userData.cols as number;
@@ -194,10 +255,12 @@ export function paintTerrain(geometry: THREE.BufferGeometry, snowLine: number) {
       smoothstep(snowLine - 150, snowLine + 150, h + n * 200) *
       smoothstep(0.3, 0.12, slope);
     c.lerp(C.snow, snow);
+    snowCover[k] = snow;
 
     colors.set([c.r, c.g, c.b], k * 3);
   }
   geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+  geometry.setAttribute('snow', new THREE.BufferAttribute(snowCover, 1));
 }
 
 /*
@@ -209,16 +272,24 @@ function addDetail(shader: { vertexShader: string; fragmentShader: string }) {
   shader.vertexShader = shader.vertexShader
     .replace(
       '#include <common>',
-      '#include <common>\nvarying vec3 vWPos;\nvarying vec3 vWNor;',
+      '#include <common>\nattribute float snow;\nattribute float sky;\nvarying float vSky;\nvarying float vSnow;\nvarying vec3 vWPos;\nvarying vec3 vWNor;',
     )
     .replace(
       '#include <worldpos_vertex>',
-      '#include <worldpos_vertex>\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvWNor = normalize(mat3(modelMatrix) * objectNormal);',
+      '#include <worldpos_vertex>\nvSky = sky;\nvSnow = snow;\nvWPos = (modelMatrix * vec4(transformed, 1.0)).xyz;\nvWNor = normalize(mat3(modelMatrix) * objectNormal);',
     );
   shader.fragmentShader = shader.fragmentShader
     .replace(
+      '#include <lights_fragment_end>',
+      `#include <lights_fragment_end>
+// Skylight and light bounced off snow and pale rock, stopped by the walls around.
+reflectedLight.indirectDiffuse *= mix(0.35, 1.35, vSky);`,
+    )
+    .replace(
       '#include <common>',
       `#include <common>
+varying float vSky;
+varying float vSnow;
 varying vec3 vWPos;
 varying vec3 vWNor;
 float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -230,7 +301,18 @@ float vnoise(vec2 p) {
     )
     .replace(
       '#include <color_fragment>',
-      `#include <color_fragment>
+      `#ifdef USE_ORTHO
+{
+  // The orthophoto, with its baked shadows lifted a little. Walls get few
+  // texels from above, so they lean on the painted rock colour instead;
+  // the 2015 flight was in summer, so the current snow is painted on top.
+  vec3 ortho = pow(diffuseColor.rgb, vec3(0.88)) * 1.06;
+  float steep = smoothstep(0.55, 0.85, 1.0 - normalize(vWNor).y) * 0.55;
+  diffuseColor.rgb = mix(mix(ortho, vColor, steep), vec3(0.95, 0.96, 0.98), vSnow);
+}
+#else
+#include <color_fragment>
+#endif
 {
   float slope = 1.0 - normalize(vWNor).y;
   float wall = smoothstep(0.3, 0.6, slope) * smoothstep(1700.0, 2100.0, vWPos.y);
@@ -241,15 +323,74 @@ float vnoise(vec2 p) {
   diffuseColor.rgb *= mix(vec3(1.0), rockTint, wall);
   float green = smoothstep(0.0, 0.06, diffuseColor.g - diffuseColor.r);
   float crowns = vnoise(vWPos.xz * 0.12) * 0.6 + vnoise(vWPos.xz * 0.5) * 0.4;
+#ifdef USE_ORTHO
+  diffuseColor.rgb *= mix(1.0, 0.85 + 0.25 * crowns, green);
+#else
   diffuseColor.rgb *= mix(1.0, 0.7 + 0.55 * crowns, green);
+#endif
 }`,
     );
+}
+
+/**
+ * How much of the sky each vertex sees, from 0 (bottom of a gully) to 1 (a
+ * summit). Shadowed faces are lit by the sky and the snow around them, and
+ * that light is stopped by the surrounding walls: this is what keeps pale
+ * dolomite pale in the shade, and dark in the gullies. Horizon angles in 8
+ * directions, computed on every second vertex and shared with neighbours.
+ */
+function skyVisibility(
+  map: Heightmap,
+  cols: number,
+  rows: number,
+  stride: number,
+): Float32Array {
+  const { width: W, height: H, sizeMeters: s } = map.meta;
+  const cell = s.x / (W - 1);
+  const h = (i: number, j: number) =>
+    scaleHeight(
+      map.data[
+        Math.min(H - 1, Math.max(0, j)) * W + Math.min(W - 1, Math.max(0, i))
+      ] ?? BASE,
+    );
+  const dirs = Array.from(
+    { length: 8 },
+    (_, d) =>
+      [Math.cos((d * Math.PI) / 4), Math.sin((d * Math.PI) / 4)] as const,
+  );
+  const steps = [40, 80, 130, 200, 300, 450, 650, 900, 1300, 1800];
+  const out = new Float32Array(cols * rows);
+  for (let vj = 0; vj < rows; vj += 2) {
+    for (let vi = 0; vi < cols; vi += 2) {
+      const i = vi * stride;
+      const j = vj * stride;
+      const h0 = h(i, j);
+      let open = 0;
+      for (const [dx, dz] of dirs) {
+        let horizon = 0;
+        for (const d of steps) {
+          const k = d / cell;
+          const t =
+            (h(Math.round(i + dx * k), Math.round(j + dz * k)) - h0) / d;
+          if (t > horizon) horizon = t;
+        }
+        open += 1 - Math.sin(Math.atan(horizon));
+      }
+      const v = open / dirs.length;
+      for (let b = 0; b < 2 && vj + b < rows; b++) {
+        for (let a = 0; a < 2 && vi + a < cols; a++)
+          out[(vj + b) * cols + vi + a] = v;
+      }
+    }
+  }
+  return out;
 }
 
 export function buildTerrain(
   map: Heightmap,
   stride: number,
   snowLine: number,
+  ortho: THREE.Texture | null = null,
 ): THREE.Mesh {
   const { width: W, height: H, sizeMeters: s } = map.meta;
   const cols = Math.floor((W - 1) / stride) + 1;
@@ -266,8 +407,16 @@ export function buildTerrain(
   geometry.computeVertexNormals();
   geometry.userData.cols = cols;
   paintTerrain(geometry, snowLine);
+  geometry.setAttribute(
+    'sky',
+    new THREE.BufferAttribute(skyVisibility(map, cols, rows, stride), 1),
+  );
 
-  const material = new THREE.MeshLambertMaterial({ vertexColors: true });
+  const material = new THREE.MeshLambertMaterial({
+    vertexColors: true,
+    map: ortho,
+  });
+  if (ortho) material.defines = { USE_ORTHO: '' };
   material.onBeforeCompile = addDetail;
   const mesh = new THREE.Mesh(geometry, material);
   mesh.name = 'terrain';

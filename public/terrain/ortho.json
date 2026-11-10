@@ -1,0 +1,13 @@
+{
+  "cols": 2,
+  "rows": 2,
+  "tileWidth": 1600,
+  "tileHeight": 2060,
+  "bounds": {
+    "north": 46.29,
+    "south": 46.115,
+    "west": 10.78,
+    "east": 10.975
+  },
+  "source": "Provincia Autonoma di Trento, Ortofoto digitale 2015 (SIAT WMS)"
+}

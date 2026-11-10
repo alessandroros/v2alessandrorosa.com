@@ -32,7 +32,7 @@ export function planksTexture(repeat = 1) {
     const r = rand(7);
     const plank = 1024 / 8;
     for (let p = 0; p < 8; p++) {
-      const base = 92 + r() * 30;
+      const base = 112 + r() * 30;
       ctx.fillStyle = `rgb(${base + 40},${base + 8},${base - 30})`;
       ctx.fillRect(0, p * plank, 1024, plank);
       for (let g = 0; g < 60; g++) {

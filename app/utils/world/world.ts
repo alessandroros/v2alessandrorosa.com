@@ -8,6 +8,7 @@ import {
   geoToWorld,
   heightAt,
   loadHeightmap,
+  loadOrtho,
   paintTerrain,
   type Heightmap,
 } from './terrain';
@@ -114,7 +115,11 @@ export async function createWorld(opts: WorldOptions) {
   /* -------------------------------------------------------- terrain */
   const map: Heightmap = await loadHeightmap(opts.onProgress);
   let snowLine = 2200;
-  const terrain = buildTerrain(map, mobile ? 2 : 1, snowLine);
+  const ortho = await loadOrtho(
+    Math.min(renderer.capabilities.maxTextureSize, mobile ? 2048 : 4096),
+    renderer.capabilities.getMaxAnisotropy(),
+  );
+  const terrain = buildTerrain(map, mobile ? 2 : 1, snowLine, ortho);
   scene.add(terrain, buildSkirt(map));
   const base = new THREE.Mesh(
     new THREE.PlaneGeometry(300000, 300000),
@@ -181,6 +186,21 @@ export async function createWorld(opts: WorldOptions) {
   const sky = new Sky();
   sky.scale.setScalar(100000);
   scene.add(sky);
+
+  // Image-based lighting from the same sky: props get the colour of the real
+  // sky on every face, not only the side the sun reaches.
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const envScene = new THREE.Scene();
+  const envSky = new Sky();
+  envSky.material = sky.material;
+  envSky.scale.setScalar(1000);
+  envScene.add(envSky);
+  let envTarget: THREE.WebGLRenderTarget | null = null;
+  function refreshEnvironment() {
+    envTarget?.dispose();
+    envTarget = pmrem.fromScene(envScene, 0, 1, 3000);
+    scene.environment = envTarget.texture;
+  }
   const skyU = sky.material.uniforms as Record<string, THREE.IUniform>;
 
   const starGeo = new THREE.BufferGeometry();
@@ -225,6 +245,11 @@ export async function createWorld(opts: WorldOptions) {
   scene.add(moon);
   const hemi = new THREE.HemisphereLight('#bcd4ff', '#3a4a30', 0.6);
   scene.add(hemi);
+  // Soft fill from behind the viewer, like a reflector in a photo: it only
+  // reaches the table, never the mountains.
+  const fill = new THREE.PointLight('#fff4e6', 2.5, 5, 2);
+  fill.position.set(0.3, 2.1, 1.9);
+  terrace.add(fill);
   scene.fog = new THREE.FogExp2('#a9c1d9', 0.00003);
 
   /* ------------------------------------------------ precipitation */
@@ -273,8 +298,14 @@ export async function createWorld(opts: WorldOptions) {
     sun.intensity =
       3.2 * day * (1 - overcast * 0.75) * smooth(-1, 3, l.altitude);
     moon.intensity = 0.35 * (1 - day) * (1 - overcast * 0.7);
-    hemi.intensity = 0.12 + 0.75 * day;
+    // Pale dolomite in the shade still gets the whole sky: keep the skylight strong.
+    hemi.intensity = 0.12 + 1.35 * day;
+    fill.intensity = 0.6 + 2.4 * day;
+    refreshEnvironment();
+    scene.environmentIntensity = 0.25 + 0.75 * day;
     hemi.color.set('#9fb7e0').lerp(tmp.set('#d9b8a8'), golden * day * 0.6);
+    // The "ground" half of the skylight is what snow and pale scree bounce back.
+    hemi.groundColor.set(l.snowLine < 2300 ? '#a7adb6' : '#6f7566');
 
     const fogDay = tmp
       .set('#a7bfd6')
@@ -284,7 +315,9 @@ export async function createWorld(opts: WorldOptions) {
       .lerp(new THREE.Color('#9aa3ab'), overcast * 0.5 * day);
     const fog = scene.fog as THREE.FogExp2;
     fog.color.copy(fogColor);
-    fog.density = 0.000018 + overcast * 0.00004 + (l.fog ? 0.00025 : 0);
+    // Aerial perspective: about a fifth of the colour of the Brenta at 7 km is
+    // haze, the far ridges fade into the sky.
+    fog.density = 0.00006 + overcast * 0.00004 + (l.fog ? 0.00025 : 0);
     renderer.toneMappingExposure = 0.55 + (1 - day) * 0.35;
     renderer.setClearColor(fogColor);
 
@@ -490,6 +523,8 @@ export async function createWorld(opts: WorldOptions) {
           | undefined;
         for (const mat of Array.isArray(m) ? m : m ? [m] : []) mat.dispose();
       });
+      envTarget?.dispose();
+      pmrem.dispose();
       renderer.dispose();
     },
   };

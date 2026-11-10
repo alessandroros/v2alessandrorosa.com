@@ -77,7 +77,7 @@ export function buildProps(
   deckTex.rotation = Math.PI / 2;
   const deck = new THREE.Mesh(
     new THREE.BoxGeometry(3.6, 0.08, 3.6),
-    wood(deckTex, '#b9a58c'),
+    wood(deckTex, '#d6c2a6'),
   );
   deck.position.y = -0.04;
   deck.receiveShadow = true;
@@ -86,11 +86,11 @@ export function buildProps(
   const table = new THREE.Group();
   const top = new THREE.Mesh(
     new THREE.BoxGeometry(1.7, 0.06, 0.95),
-    wood(planks, '#e2c9a6'),
+    wood(planks, '#fbe9cf'),
   );
   top.position.y = TABLE_HEIGHT - 0.03;
   table.add(top);
-  const legMat = wood(planks, '#a88b68');
+  const legMat = wood(planks, '#c9ab86');
   for (const [x, z] of [
     [-0.75, -0.38],
     [0.75, -0.38],
