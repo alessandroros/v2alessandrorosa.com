@@ -71,6 +71,61 @@ export async function loadHeightmap(
   return { meta, data, patch: await loadLidar(meta) };
 }
 
+/** Separable box blur of a W x H grid, clamped at the edges. */
+function boxBlur(
+  src: Float32Array,
+  W: number,
+  H: number,
+  r: number,
+): Float32Array {
+  const tmp = new Float32Array(src.length);
+  const out = new Float32Array(src.length);
+  const n = 2 * r + 1;
+  for (let j = 0; j < H; j++) {
+    for (let i = 0; i < W; i++) {
+      let sum = 0;
+      for (let k = -r; k <= r; k++)
+        sum += src[j * W + clamp(i + k, 0, W - 1)] ?? 0;
+      tmp[j * W + i] = sum / n;
+    }
+  }
+  for (let j = 0; j < H; j++) {
+    for (let i = 0; i < W; i++) {
+      let sum = 0;
+      for (let k = -r; k <= r; k++)
+        sum += tmp[clamp(j + k, 0, H - 1) * W + i] ?? 0;
+      out[j * W + i] = sum / n;
+    }
+  }
+  return out;
+}
+
+/*
+  The LiDAR records every boulder and rut of the summer ground. In winter the
+  snow pack fills them: on gentle slopes (where snow and scree lie) the
+  heights are softened over a few metres, while steep walls keep their ledges.
+  Done on the data, so skis, track and trees sit on the surface you see.
+*/
+function blanketOfSnow(data: Float32Array, W: number, H: number, cell: number) {
+  const soft = boxBlur(boxBlur(data, W, H, 1), W, H, 1);
+  for (let j = 0; j < H; j++) {
+    for (let i = 0; i < W; i++) {
+      const k = j * W + i;
+      const h = data[k] ?? 0;
+      if (!h) continue;
+      const dx =
+        (data[j * W + clamp(i + 1, 0, W - 1)] ?? h) -
+        (data[j * W + clamp(i - 1, 0, W - 1)] ?? h);
+      const dz =
+        (data[clamp(j + 1, 0, H - 1) * W + i] ?? h) -
+        (data[clamp(j - 1, 0, H - 1) * W + i] ?? h);
+      const gradient = Math.hypot(dx, dz) / (2 * cell); // tan of the slope
+      const gentle = smoothstep(0.95, 0.35, gradient);
+      data[k] = h + ((soft[k] ?? h) - h) * gentle * 0.7;
+    }
+  }
+}
+
 async function loadLidar(base: TerrainMeta): Promise<LidarPatch | null> {
   try {
     const meta = await $fetch<LidarMeta>('/terrain/lidar.json');
@@ -80,6 +135,7 @@ async function loadLidar(base: TerrainMeta): Promise<LidarPatch | null> {
     const data = new Float32Array(raw.length);
     for (let k = 0; k < raw.length; k++)
       data[k] = (raw[k] ?? 0) * meta.heightScale;
+    blanketOfSnow(data, meta.width, meta.height, meta.cellMeters);
     const b = meta.bounds;
     return {
       meta,
@@ -550,7 +606,16 @@ export function buildPatch(
     pos.setY(k, heightAt(map, x, z));
     uv.setXY(k, x / s.x + 0.5, 0.5 - z / s.z);
   }
+  // Light the terrain as if it were a little smoother than it is: normals
+  // from a softened copy hide the 3 m triangles, the silhouette stays true.
+  const heights = new Float32Array(pos.count);
+  for (let k = 0; k < pos.count; k++) heights[k] = pos.getY(k);
+  const softened = boxBlur(boxBlur(heights, cols, rows, 1), cols, rows, 1);
+  for (let k = 0; k < pos.count; k++)
+    pos.setY(k, softened[k] ?? heights[k] ?? 0);
   geometry.computeVertexNormals();
+  for (let k = 0; k < pos.count; k++) pos.setY(k, heights[k] ?? 0);
+  pos.needsUpdate = true;
   geometry.userData.cols = cols;
   paintTerrain(geometry, snowLine);
   geometry.setAttribute(
@@ -559,6 +624,8 @@ export function buildPatch(
   );
   const mesh = new THREE.Mesh(geometry, terrainMaterial(ortho));
   mesh.name = 'terrain-lidar';
+  // Skis, poles and the signpost cast their shadows on the snow here.
+  mesh.receiveShadow = true;
   return mesh;
 }
 
