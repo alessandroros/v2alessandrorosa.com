@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Sky } from 'three/addons/objects/Sky.js';
-import { buildProps, type PropId } from './props';
+import { buildGear, buildSkinTrack, type PropId } from './gear';
 import { buildForest } from './trees';
 import {
   buildPatch,
@@ -13,11 +13,11 @@ import {
   paintTerrain,
   type Heightmap,
 } from './terrain';
-import type { ScreenInfo } from './textures';
 
 /*
-  The home page world: the refuge table at Rifugio Tuckett, the real Brenta
-  group across the valley, a physically based sky driven by the real sun.
+  The home page world: skinning up from Rifugio Tuckett towards the Bocca di
+  Tuckett, in first person, on the real LiDAR terrain of the Brenta, under a
+  physically based sky driven by the real sun.
 */
 
 // Rifugio Tuckett e Sella, 2272 m, inside the group: looking up at the Bocca
@@ -25,8 +25,11 @@ import type { ScreenInfo } from './textures';
 export const VIEWPOINT = { lat: 46.19196, lon: 10.88228 };
 // Between the pass (az 116°) and Cima Brenta (az 135°), seen from the hut.
 const LOOK_AT = { lat: 46.1842, lon: 10.8982 };
-/** The walls are close and high: a wider lens, looking slightly up. */
-const LENS = { fov: 60, portraitFov: 74, pitchDeg: 5 };
+/** Wide enough for the ski tips at the bottom and the walls at the top. */
+const LENS = { fov: 70, portraitFov: 84, pitchDeg: -8 };
+/** Where the skier stands: on the skin track, this far above the hut. */
+const START_ALONG_TRACK = 25;
+const EYE_HEIGHT = 1.68;
 
 export const PEAKS = [
   {
@@ -80,8 +83,6 @@ export interface Lighting {
   fog: boolean;
   precipitation: 'snow' | 'rain' | null;
   snowLine: number;
-  /** Forces the lantern on, even in daylight. */
-  lantern: boolean;
 }
 
 export interface WorldOptions {
@@ -144,56 +145,51 @@ export async function createWorld(opts: WorldOptions) {
   base.position.y = 650;
   scene.add(base);
 
-  /* ---------------------------------------------------- the terrace */
-  const view = geoToWorld(map.meta, VIEWPOINT.lat, VIEWPOINT.lon);
+  /* --------------------------------------------------------- the rig */
+  const hut = geoToWorld(map.meta, VIEWPOINT.lat, VIEWPOINT.lon);
   const look = geoToWorld(map.meta, LOOK_AT.lat, LOOK_AT.lon);
-  let groundY = 0;
-  for (let dx = -6; dx <= 6; dx += 1.5) {
-    for (let dz = -6; dz <= 6; dz += 1.5)
-      groundY = Math.max(groundY, heightAt(map, view.x + dx, view.y + dz));
-  }
+  const passPeak = PEAKS.find((p) => p.id === 'bocca');
+  const pass = passPeak
+    ? geoToWorld(map.meta, passPeak.lat, passPeak.lon)
+    : look;
+  const towardsPass = new THREE.Vector2().subVectors(pass, hut).normalize();
+  const view = hut.clone().addScaledVector(towardsPass, START_ALONG_TRACK);
   const yaw = Math.atan2(-(look.x - view.x), -(look.y - view.y));
   const forest = buildForest(map, {
-    view,
+    view: hut,
     forward: new THREE.Vector2(look.x - view.x, look.y - view.y).normalize(),
     mobile,
   });
   scene.add(forest.group);
 
-  const { bounds } = map.meta;
-  const toUv = (lat: number, lon: number) => ({
-    u: (lon - bounds.west) / (bounds.east - bounds.west),
-    v: (bounds.north - lat) / (bounds.north - bounds.south),
-  });
-  const MAP_NAMES: Record<string, string> = {
-    tosa: 'C. Tosa',
-    crozzon: 'Crozzon',
-    brenta: 'C. Brenta',
-    bocca: 'Bocca di Tuckett',
-  };
-  const marks = [
-    { label: 'Rif. Tuckett 2272', ...toUv(VIEWPOINT.lat, VIEWPOINT.lon) },
-    ...PEAKS.map((p) => ({
-      label: `${MAP_NAMES[p.id]} ${p.altitude}`,
-      ...toUv(p.lat, p.lon),
-    })),
-  ];
+  const rig = new THREE.Group();
+  rig.position.set(view.x, heightAt(map, view.x, view.y), view.y);
+  rig.rotation.y = yaw;
+  scene.add(rig);
+  const gear = buildGear();
+  rig.add(gear.group);
+  // Tilt the skis to the slope under them, measured along the view.
+  const ahead = new THREE.Vector2(-Math.sin(yaw), -Math.cos(yaw));
+  const rise =
+    heightAt(map, view.x + ahead.x * 1.5, view.y + ahead.y * 1.5) -
+    rig.position.y;
+  gear.setSlope(Math.atan2(rise, 1.5));
+  // The skis point along the skin track, towards the pass, and the track
+  // starts right under them (they sit 1.3 m ahead of the eye).
+  const passYaw = Math.atan2(-towardsPass.x, -towardsPass.y);
+  gear.setHeading(passYaw - yaw);
+  const trackStart = view.clone().addScaledVector(ahead, 1.3);
 
-  const props = buildProps(map, marks);
-  const terrace = new THREE.Group();
-  terrace.position.set(view.x, groundY + 0.05, view.y);
-  terrace.rotation.y = yaw;
-  terrace.add(props.group);
-  scene.add(terrace);
+  const track = buildSkinTrack(map, trackStart, pass);
+  scene.add(track);
 
-  // Camera rig, in terrace space: sitting at the table, looking across the valley.
+  // Camera rig, in rig space: standing on the skis, looking up the valley.
   const home = {
-    pos: new THREE.Vector3(0, 1.32, 1.3),
-    // Pitch the view up: the pass and Cima Brenta tower over the hut.
+    pos: new THREE.Vector3(0, EYE_HEIGHT, 0),
     target: new THREE.Vector3(
       0,
-      1.32 + Math.tan(THREE.MathUtils.degToRad(LENS.pitchDeg)) * 7.3,
-      -6,
+      EYE_HEIGHT + Math.tan(THREE.MathUtils.degToRad(LENS.pitchDeg)) * 10,
+      -10,
     ),
   };
   const camPos = home.pos.clone();
@@ -251,26 +247,26 @@ export async function createWorld(opts: WorldOptions) {
   const sun = new THREE.DirectionalLight('#ffffff', 3);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.camera.left = -2;
-  sun.shadow.camera.right = 2;
-  sun.shadow.camera.top = 2;
-  sun.shadow.camera.bottom = -2;
+  sun.shadow.camera.left = -4;
+  sun.shadow.camera.right = 4;
+  sun.shadow.camera.top = 4;
+  sun.shadow.camera.bottom = -4;
   sun.shadow.camera.near = 1;
   sun.shadow.camera.far = 60;
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.02;
   scene.add(sun, sun.target);
-  sun.target.position.copy(terrace.position);
+  sun.target.position.copy(rig.position);
   const moon = new THREE.DirectionalLight('#9fb4ff', 0);
   moon.position.set(-1, 0.6, 0.4).multiplyScalar(1000);
   scene.add(moon);
   const hemi = new THREE.HemisphereLight('#bcd4ff', '#3a4a30', 0.6);
   scene.add(hemi);
   // Soft fill from behind the viewer, like a reflector in a photo: it only
-  // reaches the table, never the mountains.
-  const fill = new THREE.PointLight('#fff4e6', 2.5, 5, 2);
-  fill.position.set(0.3, 2.1, 1.9);
-  terrace.add(fill);
+  // reaches the skis and the signpost, never the mountains.
+  const fill = new THREE.PointLight('#fff4e6', 2.5, 7, 2);
+  fill.position.set(0.4, 2.4, 1.2);
+  rig.add(fill);
   scene.fog = new THREE.FogExp2('#a9c1d9', 0.00003);
 
   /* ------------------------------------------------ precipitation */
@@ -283,16 +279,29 @@ export async function createWorld(opts: WorldOptions) {
   }
   const flakeGeo = new THREE.BufferGeometry();
   flakeGeo.setAttribute('position', new THREE.BufferAttribute(flakePos, 3));
+  // Round, soft flakes (points are square by default).
+  const flakeCanvas = document.createElement('canvas');
+  flakeCanvas.width = flakeCanvas.height = 32;
+  const fctx = flakeCanvas.getContext('2d');
+  if (fctx) {
+    const g = fctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.6, 'rgba(255,255,255,0.6)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    fctx.fillStyle = g;
+    fctx.fillRect(0, 0, 32, 32);
+  }
   const flakeMat = new THREE.PointsMaterial({
     color: '#ffffff',
-    size: 0.05,
+    size: 0.035,
+    map: new THREE.CanvasTexture(flakeCanvas),
     transparent: true,
     opacity: 0.9,
     depthWrite: false,
   });
   const precip = new THREE.Points(flakeGeo, flakeMat);
   precip.visible = false;
-  terrace.add(precip);
+  rig.add(precip);
 
   /* ------------------------------------------------------ lighting */
   let lighting: Lighting | null = null;
@@ -314,7 +323,7 @@ export async function createWorld(opts: WorldOptions) {
       skyU.mieCoefficient.value = 0.004 + overcast * 0.01;
     if (skyU.mieDirectionalG) skyU.mieDirectionalG.value = 0.8;
 
-    sun.position.copy(terrace.position).addScaledVector(dir, 30);
+    sun.position.copy(rig.position).addScaledVector(dir, 30);
     sun.color.set('#fff1e0').lerp(tmp.set('#ff8a4a'), golden * day);
     sun.intensity =
       3.2 * day * (1 - overcast * 0.75) * smooth(-1, 3, l.altitude);
@@ -344,10 +353,8 @@ export async function createWorld(opts: WorldOptions) {
 
     starMat.opacity = (1 - smooth(-12, -3, l.altitude)) * (1 - overcast);
 
-    const lanternOn = l.lantern || day < 0.5;
-    props.lanternLight.intensity = lanternOn ? 1.6 : 0;
-    props.lanternGlass.emissiveIntensity = lanternOn ? 2.2 : 0;
-    props.laptopScreen.color.setScalar(0.55 + (1 - day) * 0.2);
+    // The skin track only shows where there is snow to hold it.
+    track.visible = l.snowLine < rig.position.y + 150;
 
     precipitation = l.precipitation;
     precip.visible = !!precipitation;
@@ -369,7 +376,7 @@ export async function createWorld(opts: WorldOptions) {
   const black = new THREE.Color('#000000');
 
   function setHighlight(id: PropId | null) {
-    for (const item of props.clickable) {
+    for (const item of gear.clickable) {
       const on = item.userData.id === id;
       item.traverse((c) => {
         const m = (c as THREE.Mesh).material as
@@ -377,8 +384,7 @@ export async function createWorld(opts: WorldOptions) {
           | THREE.MeshStandardMaterial[]
           | undefined;
         for (const mat of Array.isArray(m) ? m : m ? [m] : []) {
-          if (mat.emissive && mat !== props.lanternGlass)
-            mat.emissive.copy(on ? highlight : black);
+          if (mat.emissive) mat.emissive.copy(on ? highlight : black);
         }
       });
     }
@@ -386,7 +392,7 @@ export async function createWorld(opts: WorldOptions) {
 
   function pick(): PropId | null {
     raycaster.setFromCamera(pointerNdc, camera);
-    const hit = raycaster.intersectObjects(props.clickable, true)[0];
+    const hit = raycaster.intersectObjects(gear.clickable, true)[0];
     let o: THREE.Object3D | null = hit?.object ?? null;
     while (o && !o.userData.id) o = o.parent;
     return (o?.userData.id as PropId | undefined) ?? null;
@@ -430,18 +436,20 @@ export async function createWorld(opts: WorldOptions) {
   opts.canvas.addEventListener('pointerdown', onPointerDown);
   opts.canvas.addEventListener('pointerup', onPointerUp);
 
-  /** Moves the camera close to a prop, or back to the seat with `null`. */
+  /** Turns to a plate of the signpost, or back up the track with `null`. */
   function focus(id: PropId | null) {
-    if (!id || id === 'lantern') {
+    if (!id) {
       goalPos.copy(home.pos);
       goalTarget.copy(home.target);
       return;
     }
-    // The panel covers the right side: aim past the object so it sits on the left.
-    const a = props.anchors[id];
+    // Step towards the plate; the panel covers the right side, so aim past
+    // the plate to keep it on the left.
+    const a = gear.anchor(id);
     const wide = opts.canvas.clientWidth > 900;
-    goalTarget.copy(a).add(new THREE.Vector3(wide ? 0.16 : 0, 0, 0));
-    goalPos.copy(a).add(new THREE.Vector3(wide ? 0.2 : 0.05, 0.42, 0.52));
+    goalPos.copy(home.pos).lerp(a, 0.55);
+    goalPos.y = EYE_HEIGHT;
+    goalTarget.copy(a).add(new THREE.Vector3(wide ? 0.5 : 0, 0, 0));
   }
 
   /* ------------------------------------------------------- resize */
@@ -450,8 +458,9 @@ export async function createWorld(opts: WorldOptions) {
     const h = opts.canvas.clientHeight;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    // Keep the table and the summits in frame on portrait screens.
+    // Keep the ski tips, the signpost and the summits in frame on portrait screens.
     camera.fov = camera.aspect < 1 ? LENS.portraitFov : LENS.fov;
+    gear.setNarrow(camera.aspect < 1);
     camera.updateProjectionMatrix();
   }
   const ro = new ResizeObserver(resize);
@@ -459,9 +468,9 @@ export async function createWorld(opts: WorldOptions) {
   resize();
 
   /* --------------------------------------------------------- loop */
-  // Labels only for summits the eye can see from the table: walk the line of
+  // Labels only for summits the eye can see from the track: walk the line of
   // sight over the heightmap once, at start.
-  const eye = terrace.localToWorld(home.pos.clone());
+  const eye = rig.localToWorld(home.pos.clone());
   const peaks = PEAKS.filter((p) => p.label)
     .map((p) => {
       const g = geoToWorld(map.meta, p.lat, p.lon);
@@ -498,8 +507,8 @@ export async function createWorld(opts: WorldOptions) {
       pointer.y * 0.03 + Math.sin(t * 0.5) * 0.006,
       0,
     );
-    camera.position.copy(terrace.localToWorld(v.copy(camPos).add(sway)));
-    camera.lookAt(terrace.localToWorld(v.copy(camTarget)));
+    camera.position.copy(rig.localToWorld(v.copy(camPos).add(sway)));
+    camera.lookAt(rig.localToWorld(v.copy(camTarget)));
 
     if (precipitation) {
       const arr = flakeGeo.getAttribute('position') as THREE.BufferAttribute;
@@ -537,7 +546,6 @@ export async function createWorld(opts: WorldOptions) {
   return {
     setLighting,
     focus,
-    updateScreens: (info: ScreenInfo) => props.updateScreens(info),
     get lighting() {
       return lighting;
     },

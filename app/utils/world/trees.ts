@@ -89,7 +89,7 @@ export function buildForest(
     if (h < 1300 && slope < 0.01) continue; // lakes
     // Clearings: pastures on gentle ground.
     if (slope < 0.18 && r() < 0.55) continue;
-    // Keep the view open right in front of the table.
+    // Keep the view open right in front of the viewer.
     const off = Math.abs(
       Math.atan2(
         Math.sin(angle - Math.atan2(forward.y, forward.x)),

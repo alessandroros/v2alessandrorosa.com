@@ -10,26 +10,25 @@ import {
   type Weather,
   type WeatherPreset,
 } from '~/utils/brenta';
-import type { PropId } from '~/utils/world/props';
+import type { PropId } from '~/utils/world/gear';
 import { PEAKS, type Label, type World } from '~/utils/world/world';
 
 const props = defineProps<{ open: PropId | null }>();
 const emit = defineEmits<{
-  pick: [id: Exclude<PropId, 'lantern'>];
+  pick: [id: PropId];
   lofi: [];
 }>();
 
 const TITLES: Record<PropId, string> = {
-  about: 'Enamel mug · about me',
-  route: 'Hiking map · the route',
-  logbook: 'Summit logbook · blog',
-  projects: 'Laptop · projects',
-  stack: 'Rope · my stack',
-  contact: 'Radio · get in touch',
-  lantern: 'Lantern · change the time of day',
+  about: 'Signpost · about me',
+  route: 'Signpost · the route',
+  logbook: 'Signpost · summit logbook',
+  projects: 'Signpost · projects',
+  stack: 'Signpost · my stack',
+  contact: 'Signpost · get in touch',
 };
 
-const MENU: { id: Exclude<PropId, 'lantern'>; label: string }[] = [
+const MENU: { id: PropId; label: string }[] = [
   { id: 'about', label: 'About' },
   { id: 'route', label: 'Route' },
   { id: 'logbook', label: 'Logbook' },
@@ -59,7 +58,7 @@ const romeHour = (d: Date) => {
 };
 
 const now = ref(new Date());
-// The lantern cycles: live → midday → sunset (enrosadira) → night → live.
+// The time button cycles: live → midday → sunset (enrosadira) → night → live.
 const SCENES = [null, 'day', 'sunset', 'night'] as const;
 const sceneIndex = ref(0);
 const simWeather = ref<WeatherPreset>('live');
@@ -136,12 +135,6 @@ function applyLighting() {
     fog: code === 45 || code === 48,
     precipitation: SNOW.has(code) ? 'snow' : RAIN.has(code) ? 'rain' : null,
     snowLine: SNOW.has(code) ? Math.min(seasonal, 1400) : seasonal,
-    lantern: sceneIndex.value !== 0,
-  });
-  world.updateScreens({
-    temperature: tempText.value,
-    sky: skyText.value,
-    time: romeTime.format(date.value),
   });
 }
 
@@ -158,10 +151,6 @@ async function refreshWeather() {
 /* ---------------------------------------------------------- picking */
 
 function pick(id: PropId) {
-  if (id === 'lantern') {
-    sceneIndex.value = (sceneIndex.value + 1) % SCENES.length;
-    return;
-  }
   emit('pick', id);
 }
 
@@ -226,7 +215,7 @@ const sceneLabel = computed(() => SCENES[sceneIndex.value] ?? 'live');
         class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-5 bg-[#0b1222] font-mono text-xs tracking-[0.16em] uppercase"
       >
         <template v-if="!failed">
-          <p class="opacity-80">Walking up to Rifugio Tuckett · 2272 m</p>
+          <p class="opacity-80">Skinning up from Rifugio Tuckett · 2272 m</p>
           <div class="h-px w-56 bg-white/15">
             <div
               class="h-px bg-white transition-[width]"
@@ -342,7 +331,7 @@ const sceneLabel = computed(() => SCENES[sceneIndex.value] ?? 'live');
           >({{ sceneLabel }})</span
         >
       </div>
-      <p class="hidden opacity-70 lg:block">Click the things on the table.</p>
+      <p class="hidden opacity-70 lg:block">Click the signpost.</p>
       <div class="ml-auto flex gap-2">
         <select
           v-model="simWeather"

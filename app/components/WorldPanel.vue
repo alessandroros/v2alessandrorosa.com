@@ -30,7 +30,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey));
           class="rounded-full border border-surface-border px-3 py-1 font-mono text-xs tracking-[0.1em] uppercase hover:border-[color:var(--accent-link)]"
           @click="emit('close')"
         >
-          Back to the table
+          Back to the track
         </button>
       </div>
       <div class="flex-1 overflow-y-auto px-6 py-8">
