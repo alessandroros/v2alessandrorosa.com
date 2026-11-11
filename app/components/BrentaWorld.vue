@@ -226,7 +226,7 @@ const sceneLabel = computed(() => SCENES[sceneIndex.value] ?? 'live');
         class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-5 bg-[#0b1222] font-mono text-xs tracking-[0.16em] uppercase"
       >
         <template v-if="!failed">
-          <p class="opacity-80">Walking up to Monte Spinale · 2104 m</p>
+          <p class="opacity-80">Walking up to Rifugio Tuckett · 2272 m</p>
           <div class="h-px w-56 bg-white/15">
             <div
               class="h-px bg-white transition-[width]"
@@ -310,7 +310,7 @@ const sceneLabel = computed(() => SCENES[sceneIndex.value] ?? 'live');
         rel="noreferrer"
         >AWS Terrain Tiles</a
       >
-      · Orthophoto 2015 ©
+      · LiDAR 2014/2018 and orthophoto 2015 ©
       <a
         class="underline"
         href="https://www.provincia.tn.it/News/Approfondimenti/Ortofoto-digitale-2015"

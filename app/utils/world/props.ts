@@ -12,7 +12,7 @@ import {
 } from './textures';
 
 /*
-  The refuge table on Monte Spinale. Each object is a door into a part of
+  The refuge table at Rifugio Tuckett. Each object is a door into a part of
   the site: its group carries `userData.id`, which the world raycasts for.
 */
 

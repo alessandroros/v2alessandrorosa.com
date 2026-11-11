@@ -113,10 +113,10 @@ export function topoMapTexture(
     }
     ctx.putImageData(img, 0, 0);
 
-    // Route from Monte Spinale towards Cima Tosa.
-    const spinale = marks.find((m) => m.label.startsWith('M. Spinale'));
+    // Route from Rifugio Tuckett towards Cima Tosa.
+    const start = marks.find((m) => m.label.startsWith('Rif. Tuckett'));
     const tosa = marks.find((m) => m.label.startsWith('C. Tosa'));
-    if (spinale && tosa) {
+    if (start && tosa) {
       ctx.strokeStyle = '#c42a1c';
       ctx.lineWidth = 4;
       ctx.setLineDash([12, 8]);
@@ -125,8 +125,8 @@ export function topoMapTexture(
       for (let s = 0; s <= steps; s++) {
         const t = s / steps;
         const x =
-          (spinale.u + (tosa.u - spinale.u) * t + Math.sin(t * 9) * 0.015) * W;
-        const y = (spinale.v + (tosa.v - spinale.v) * t) * H;
+          (start.u + (tosa.u - start.u) * t + Math.sin(t * 9) * 0.015) * W;
+        const y = (start.v + (tosa.v - start.v) * t) * H;
         if (s) ctx.lineTo(x, y);
         else ctx.moveTo(x, y);
       }
@@ -197,7 +197,7 @@ export function bookCoverTexture() {
     ctx.fillText('LIBRO', 256, 270);
     ctx.fillText('DI VETTA', 256, 330);
     ctx.font = 'italic 24px Georgia, serif';
-    ctx.fillText('Monte Spinale · 2104 m', 256, 400);
+    ctx.fillText('Rifugio Tuckett · 2272 m', 256, 400);
     ctx.beginPath();
     ctx.moveTo(196, 470);
     ctx.lineTo(256, 420);
@@ -241,15 +241,15 @@ export function drawTerminal(ctx: CanvasRenderingContext2D, info: ScreenInfo) {
   ctx.fillRect(0, 0, 640, 400);
   ctx.font = '19px "JetBrains Mono", Menlo, monospace';
   const lines: [string, string][] = [
-    ['#7be08a', 'alessandro@spinale:~$ kubectl get nodes'],
+    ['#7be08a', 'alessandro@tuckett:~$ kubectl get nodes'],
     ['#cfe8d8', 'NAME          STATUS   AGE'],
     ['#cfe8d8', 'brenta-01     Ready    5y'],
     ['#cfe8d8', 'brenta-02     Ready    5y'],
-    ['#7be08a', 'alessandro@spinale:~$ curl -s meteo/cima-tosa'],
+    ['#7be08a', 'alessandro@tuckett:~$ curl -s meteo/cima-tosa'],
     ['#ffd27a', `{"temp": "${info.temperature}", "sky": "${info.sky}"}`],
-    ['#7be08a', `alessandro@spinale:~$ date +%H:%M`],
+    ['#7be08a', `alessandro@tuckett:~$ date +%H:%M`],
     ['#cfe8d8', info.time],
-    ['#7be08a', 'alessandro@spinale:~$ █'],
+    ['#7be08a', 'alessandro@tuckett:~$ █'],
   ];
   lines.forEach(([color, text], i) => {
     ctx.fillStyle = color;

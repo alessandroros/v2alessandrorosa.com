@@ -3,6 +3,7 @@ import { Sky } from 'three/addons/objects/Sky.js';
 import { buildProps, type PropId } from './props';
 import { buildForest } from './trees';
 import {
+  buildPatch,
   buildSkirt,
   buildTerrain,
   geoToWorld,
@@ -15,13 +16,17 @@ import {
 import type { ScreenInfo } from './textures';
 
 /*
-  The home page world: the refuge table on Monte Spinale, the real Brenta
+  The home page world: the refuge table at Rifugio Tuckett, the real Brenta
   group across the valley, a physically based sky driven by the real sun.
 */
 
-// West shoulder of Monte Spinale, above Madonna di Campiglio: the view to the group is open.
-export const VIEWPOINT = { lat: 46.2224, lon: 10.8459 };
-const LOOK_AT = { lat: 46.165, lon: 10.887 };
+// Rifugio Tuckett e Sella, 2272 m, inside the group: looking up at the Bocca
+// di Tuckett, with Cima Brenta on the right.
+export const VIEWPOINT = { lat: 46.19196, lon: 10.88228 };
+// Between the pass (az 116°) and Cima Brenta (az 135°), seen from the hut.
+const LOOK_AT = { lat: 46.1842, lon: 10.8982 };
+/** The walls are close and high: a wider lens, looking slightly up. */
+const LENS = { fov: 60, portraitFov: 74, pitchDeg: 5 };
 
 export const PEAKS = [
   {
@@ -32,7 +37,7 @@ export const PEAKS = [
     lon: 10.8712,
     label: true,
   },
-  // Right in front of Cima Tosa from the Spinale: on the map only.
+  // Hidden behind other walls from the Tuckett: on the map only.
   {
     id: 'crozzon',
     name: 'Crozzon di Brenta',
@@ -45,8 +50,16 @@ export const PEAKS = [
     id: 'brenta',
     name: 'Cima Brenta',
     altitude: 3150,
-    lat: 46.1796,
-    lon: 10.8984,
+    lat: 46.1795,
+    lon: 10.89989,
+    label: true,
+  },
+  {
+    id: 'bocca',
+    name: 'Bocca di Tuckett',
+    altitude: 2648,
+    lat: 46.18556,
+    lon: 10.90102,
     label: true,
   },
 ] as const;
@@ -120,6 +133,8 @@ export async function createWorld(opts: WorldOptions) {
     renderer.capabilities.getMaxAnisotropy(),
   );
   const terrain = buildTerrain(map, mobile ? 2 : 1, snowLine, ortho);
+  const lidar = buildPatch(map, mobile ? 2 : 1, snowLine, ortho);
+  if (lidar) scene.add(lidar);
   scene.add(terrain, buildSkirt(map));
   const base = new THREE.Mesh(
     new THREE.PlaneGeometry(300000, 300000),
@@ -154,9 +169,10 @@ export async function createWorld(opts: WorldOptions) {
     tosa: 'C. Tosa',
     crozzon: 'Crozzon',
     brenta: 'C. Brenta',
+    bocca: 'Bocca di Tuckett',
   };
   const marks = [
-    { label: 'M. Spinale 2104', ...toUv(VIEWPOINT.lat, VIEWPOINT.lon) },
+    { label: 'Rif. Tuckett 2272', ...toUv(VIEWPOINT.lat, VIEWPOINT.lon) },
     ...PEAKS.map((p) => ({
       label: `${MAP_NAMES[p.id]} ${p.altitude}`,
       ...toUv(p.lat, p.lon),
@@ -173,7 +189,12 @@ export async function createWorld(opts: WorldOptions) {
   // Camera rig, in terrace space: sitting at the table, looking across the valley.
   const home = {
     pos: new THREE.Vector3(0, 1.32, 1.3),
-    target: new THREE.Vector3(0, 0.95, -6),
+    // Pitch the view up: the pass and Cima Brenta tower over the hut.
+    target: new THREE.Vector3(
+      0,
+      1.32 + Math.tan(THREE.MathUtils.degToRad(LENS.pitchDeg)) * 7.3,
+      -6,
+    ),
   };
   const camPos = home.pos.clone();
   const camTarget = home.target.clone();
@@ -337,6 +358,7 @@ export async function createWorld(opts: WorldOptions) {
     if (Math.abs(l.snowLine - snowLine) > 50) {
       snowLine = l.snowLine;
       paintTerrain(terrain.geometry, snowLine);
+      if (lidar) paintTerrain(lidar.geometry, snowLine);
     }
   }
 
@@ -429,7 +451,7 @@ export async function createWorld(opts: WorldOptions) {
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
     // Keep the table and the summits in frame on portrait screens.
-    camera.fov = camera.aspect < 1 ? 68 : 50;
+    camera.fov = camera.aspect < 1 ? LENS.portraitFov : LENS.fov;
     camera.updateProjectionMatrix();
   }
   const ro = new ResizeObserver(resize);
@@ -437,13 +459,25 @@ export async function createWorld(opts: WorldOptions) {
   resize();
 
   /* --------------------------------------------------------- loop */
-  const peaks = PEAKS.filter((p) => p.label).map((p) => {
-    const g = geoToWorld(map.meta, p.lat, p.lon);
-    return {
-      id: p.id,
-      pos: new THREE.Vector3(g.x, heightAt(map, g.x, g.y) + 60, g.y),
-    };
-  });
+  // Labels only for summits the eye can see from the table: walk the line of
+  // sight over the heightmap once, at start.
+  const eye = terrace.localToWorld(home.pos.clone());
+  const peaks = PEAKS.filter((p) => p.label)
+    .map((p) => {
+      const g = geoToWorld(map.meta, p.lat, p.lon);
+      return {
+        id: p.id,
+        pos: new THREE.Vector3(g.x, heightAt(map, g.x, g.y) + 40, g.y),
+      };
+    })
+    .filter(({ pos }) => {
+      const p = new THREE.Vector3();
+      for (let t = 0.03; t < 0.97; t += 0.01) {
+        p.lerpVectors(eye, pos, t);
+        if (heightAt(map, p.x, p.z) > p.y + 8) return false;
+      }
+      return true;
+    });
   const v = new THREE.Vector3();
   const clock = new THREE.Clock();
   let frame = 0;

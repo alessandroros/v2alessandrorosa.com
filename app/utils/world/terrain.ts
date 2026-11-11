@@ -7,7 +7,8 @@ import * as THREE from 'three';
   from 7 km away, which is what the eye remembers).
 */
 
-export const EXAGGERATION = 1.3;
+// True scale: around the Tuckett the LiDAR shows the walls as they are.
+export const EXAGGERATION = 1;
 const BASE = 800;
 
 export interface TerrainMeta {
@@ -19,11 +20,34 @@ export interface TerrainMeta {
   maxHeight: number;
 }
 
+export interface LidarMeta {
+  width: number;
+  height: number;
+  bounds: { north: number; south: number; west: number; east: number };
+  sizeMeters: { x: number; z: number };
+  cellMeters: number;
+  heightScale: number;
+}
+
+/** High-resolution LiDAR patch (scripts/bake-lidar.py), in world space. */
+export interface LidarPatch {
+  meta: LidarMeta;
+  /** Heights in metres, row-major, north first; 0 where there is no data. */
+  data: Float32Array;
+  /** World x, z of the north-west corner and of the south-east corner. */
+  min: THREE.Vector2;
+  max: THREE.Vector2;
+}
+
 export interface Heightmap {
   meta: TerrainMeta;
   /** Heights in metres, row-major, north first. */
   data: Float32Array;
+  patch: LidarPatch | null;
 }
+
+/** Width of the band where the LiDAR patch fades into the base terrain. */
+const PATCH_BLEND = 150;
 
 export async function loadHeightmap(
   onProgress?: (ratio: number) => void,
@@ -43,7 +67,29 @@ export async function loadHeightmap(
     received += value.length;
     onProgress?.(Math.min(1, received / total));
   }
-  return { meta, data: sharpenWalls(meta, new Uint16Array(buffer.buffer)) };
+  const data = sharpenWalls(meta, new Uint16Array(buffer.buffer));
+  return { meta, data, patch: await loadLidar(meta) };
+}
+
+async function loadLidar(base: TerrainMeta): Promise<LidarPatch | null> {
+  try {
+    const meta = await $fetch<LidarMeta>('/terrain/lidar.json');
+    const res = await fetch('/terrain/lidar.u16');
+    if (!res.ok) return null;
+    const raw = new Uint16Array(await res.arrayBuffer());
+    const data = new Float32Array(raw.length);
+    for (let k = 0; k < raw.length; k++)
+      data[k] = (raw[k] ?? 0) * meta.heightScale;
+    const b = meta.bounds;
+    return {
+      meta,
+      data,
+      min: geoToWorld(base, b.north, b.west),
+      max: geoToWorld(base, b.south, b.east),
+    };
+  } catch {
+    return null;
+  }
 }
 
 /*
@@ -158,8 +204,53 @@ export function geoToWorld(meta: TerrainMeta, lat: number, lon: number) {
   );
 }
 
-/** Bilinear height in world units at world (x, z). */
+/**
+ * Height in world units at world (x, z): the LiDAR patch where there is
+ * one, faded into the base terrain near its edges.
+ */
 export function heightAt(map: Heightmap, x: number, z: number): number {
+  const base = baseHeightAt(map, x, z);
+  const p = map.patch;
+  if (!p || x <= p.min.x || x >= p.max.x || z <= p.min.y || z >= p.max.y)
+    return base;
+  const edge = Math.min(x - p.min.x, p.max.x - x, z - p.min.y, p.max.y - z);
+  const w = smoothstep(0, PATCH_BLEND, edge);
+  const { width: W, height: H } = p.meta;
+  const fx = ((x - p.min.x) / (p.max.x - p.min.x)) * (W - 1);
+  const fz = ((z - p.min.y) / (p.max.y - p.min.y)) * (H - 1);
+  const i = Math.min(W - 2, Math.floor(fx));
+  const j = Math.min(H - 2, Math.floor(fz));
+  const dx = fx - i;
+  const dz = fz - j;
+  const v00 = p.data[j * W + i] ?? 0;
+  const v10 = p.data[j * W + i + 1] ?? 0;
+  const v01 = p.data[(j + 1) * W + i] ?? 0;
+  const v11 = p.data[(j + 1) * W + i + 1] ?? 0;
+  if (!v00 || !v10 || !v01 || !v11) return base;
+  const h =
+    (v00 * (1 - dx) + v10 * dx) * (1 - dz) + (v01 * (1 - dx) + v11 * dx) * dz;
+  return base + (scaleHeight(h) - base) * w;
+}
+
+/** Inside the LiDAR patch, away from its blend band. */
+function insidePatch(
+  map: Heightmap,
+  x: number,
+  z: number,
+  margin = PATCH_BLEND,
+) {
+  const p = map.patch;
+  return (
+    !!p &&
+    x > p.min.x + margin &&
+    x < p.max.x - margin &&
+    z > p.min.y + margin &&
+    z < p.max.y - margin
+  );
+}
+
+/** Bilinear height of the base (25 m) terrain in world units at world (x, z). */
+function baseHeightAt(map: Heightmap, x: number, z: number): number {
   const { width: W, height: H, sizeMeters: s } = map.meta;
   const fx = clamp((x / s.x + 0.5) * (W - 1), 0, W - 1.001);
   const fz = clamp((z / s.z + 0.5) * (H - 1), 0, H - 1.001);
@@ -341,37 +432,32 @@ float vnoise(vec2 p) {
  */
 function skyVisibility(
   map: Heightmap,
+  geometry: THREE.BufferGeometry,
   cols: number,
-  rows: number,
-  stride: number,
+  near: boolean,
 ): Float32Array {
-  const { width: W, height: H, sizeMeters: s } = map.meta;
-  const cell = s.x / (W - 1);
-  const h = (i: number, j: number) =>
-    scaleHeight(
-      map.data[
-        Math.min(H - 1, Math.max(0, j)) * W + Math.min(W - 1, Math.max(0, i))
-      ] ?? BASE,
-    );
+  const pos = geometry.getAttribute('position');
+  const rows = pos.count / cols;
   const dirs = Array.from(
     { length: 8 },
     (_, d) =>
       [Math.cos((d * Math.PI) / 4), Math.sin((d * Math.PI) / 4)] as const,
   );
-  const steps = [40, 80, 130, 200, 300, 450, 650, 900, 1300, 1800];
-  const out = new Float32Array(cols * rows);
+  const steps = near
+    ? [6, 12, 25, 40, 70, 110, 170, 260, 400, 600, 900, 1300, 1800]
+    : [40, 80, 130, 200, 300, 450, 650, 900, 1300, 1800];
+  const out = new Float32Array(pos.count);
   for (let vj = 0; vj < rows; vj += 2) {
     for (let vi = 0; vi < cols; vi += 2) {
-      const i = vi * stride;
-      const j = vj * stride;
-      const h0 = h(i, j);
+      const k0 = vj * cols + vi;
+      const x = pos.getX(k0);
+      const z = pos.getZ(k0);
+      const h0 = pos.getY(k0);
       let open = 0;
       for (const [dx, dz] of dirs) {
         let horizon = 0;
         for (const d of steps) {
-          const k = d / cell;
-          const t =
-            (h(Math.round(i + dx * k), Math.round(j + dz * k)) - h0) / d;
+          const t = (heightAt(map, x + dx * d, z + dz * d) - h0) / d;
           if (t > horizon) horizon = t;
         }
         open += 1 - Math.sin(Math.atan(horizon));
@@ -384,6 +470,16 @@ function skyVisibility(
     }
   }
   return out;
+}
+
+function terrainMaterial(ortho: THREE.Texture | null) {
+  const material = new THREE.MeshLambertMaterial({
+    vertexColors: true,
+    map: ortho,
+  });
+  if (ortho) material.defines = { USE_ORTHO: '' };
+  material.onBeforeCompile = addDetail;
+  return material;
 }
 
 export function buildTerrain(
@@ -400,8 +496,17 @@ export function buildTerrain(
   const pos = geometry.getAttribute('position');
   for (let j = 0; j < rows; j++) {
     for (let i = 0; i < cols; i++) {
-      const h = map.data[j * stride * W + i * stride] ?? BASE;
-      pos.setY(j * cols + i, scaleHeight(h));
+      const k = j * cols + i;
+      const x = pos.getX(k);
+      const z = pos.getZ(k);
+      // Under the LiDAR patch the base terrain steps aside; in the blend band
+      // it follows the faded heights, so the two meshes meet without a seam.
+      const y = insidePatch(map, x, z)
+        ? heightAt(map, x, z) - 40
+        : insidePatch(map, x, z, -20)
+          ? heightAt(map, x, z) - 0.5
+          : scaleHeight(map.data[j * stride * W + i * stride] ?? BASE);
+      pos.setY(k, y);
     }
   }
   geometry.computeVertexNormals();
@@ -409,17 +514,51 @@ export function buildTerrain(
   paintTerrain(geometry, snowLine);
   geometry.setAttribute(
     'sky',
-    new THREE.BufferAttribute(skyVisibility(map, cols, rows, stride), 1),
+    new THREE.BufferAttribute(skyVisibility(map, geometry, cols, false), 1),
   );
 
-  const material = new THREE.MeshLambertMaterial({
-    vertexColors: true,
-    map: ortho,
-  });
-  if (ortho) material.defines = { USE_ORTHO: '' };
-  material.onBeforeCompile = addDetail;
-  const mesh = new THREE.Mesh(geometry, material);
+  const mesh = new THREE.Mesh(geometry, terrainMaterial(ortho));
   mesh.name = 'terrain';
+  return mesh;
+}
+
+/**
+ * The LiDAR patch around the Tuckett as its own mesh, with the same
+ * materials as the base terrain and orthophoto UVs in the base frame.
+ */
+export function buildPatch(
+  map: Heightmap,
+  stride: number,
+  snowLine: number,
+  ortho: THREE.Texture | null,
+): THREE.Mesh | null {
+  const p = map.patch;
+  if (!p) return null;
+  const s = map.meta.sizeMeters;
+  const cols = Math.floor((p.meta.width - 1) / stride) + 1;
+  const rows = Math.floor((p.meta.height - 1) / stride) + 1;
+  const w = p.max.x - p.min.x;
+  const d = p.max.y - p.min.y;
+  const geometry = new THREE.PlaneGeometry(w, d, cols - 1, rows - 1);
+  geometry.rotateX(-Math.PI / 2);
+  geometry.translate(p.min.x + w / 2, 0, p.min.y + d / 2);
+  const pos = geometry.getAttribute('position');
+  const uv = geometry.getAttribute('uv');
+  for (let k = 0; k < pos.count; k++) {
+    const x = pos.getX(k);
+    const z = pos.getZ(k);
+    pos.setY(k, heightAt(map, x, z));
+    uv.setXY(k, x / s.x + 0.5, 0.5 - z / s.z);
+  }
+  geometry.computeVertexNormals();
+  geometry.userData.cols = cols;
+  paintTerrain(geometry, snowLine);
+  geometry.setAttribute(
+    'sky',
+    new THREE.BufferAttribute(skyVisibility(map, geometry, cols, true), 1),
+  );
+  const mesh = new THREE.Mesh(geometry, terrainMaterial(ortho));
+  mesh.name = 'terrain-lidar';
   return mesh;
 }
 
