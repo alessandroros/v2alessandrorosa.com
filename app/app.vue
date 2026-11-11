@@ -1,4 +1,11 @@
 <script setup lang="ts">
+const route = useRoute();
+
+// The home page is the 3D refuge table, which carries its own navigation.
+// "Lo-fi" switches back to the classic page.
+const lofi = useState('lofi', () => false);
+const immersive = computed(() => route.path === '/' && !lofi.value);
+
 const baseTitle = 'Alessandro Rosà | Software Engineer';
 const baseDescription =
   'Software engineer from Italy, leading cloud development at SDF. I design architectures that stay reliable as they scale.';
@@ -84,13 +91,15 @@ useSchemaOrg([
 </script>
 
 <template>
-  <div class="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-4 sm:px-8">
-    <Navigation />
+  <div
+    class="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-4 py-4 sm:px-8"
+  >
+    <Navigation v-if="!immersive" />
 
     <main class="flex w-full flex-1 flex-col">
       <NuxtPage />
     </main>
 
-    <Footer />
+    <Footer v-if="!immersive" />
   </div>
 </template>

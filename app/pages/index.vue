@@ -33,6 +33,39 @@ const { data: contributions } = useFetch<ContributionCalendar>(
   { server: false },
 );
 
+const lofi = useState('lofi', () => false);
+
+type Panel = 'about' | 'route' | 'logbook' | 'projects' | 'stack' | 'contact';
+const panel = ref<Panel | null>(null);
+
+const PANEL_TITLES: Record<Panel, string> = {
+  about: 'About',
+  route: 'The route',
+  logbook: 'Summit logbook',
+  projects: 'Projects',
+  stack: 'Stack',
+  contact: 'Contact',
+};
+
+// Links such as /#blog from other pages open the matching panel.
+const HASH_PANELS: Record<string, Panel> = {
+  '#about': 'about',
+  '#route': 'route',
+  '#blog': 'logbook',
+  '#projects': 'projects',
+  '#stack': 'stack',
+  '#contact': 'contact',
+};
+const route = useRoute();
+watch(
+  () => route.hash,
+  (hash) => {
+    const p = HASH_PANELS[hash];
+    if (p && !lofi.value) panel.value = p;
+  },
+  { immediate: true },
+);
+
 const featuredProjects: Project[] = [
   {
     name: 'capitalquest.fun',
@@ -51,8 +84,34 @@ const featuredProjects: Project[] = [
 </script>
 
 <template>
-  <div class="flex w-full flex-col gap-24 pb-16">
+  <ClientOnly v-if="!lofi">
+    <BrentaWorld :open="panel" @pick="panel = $event" @lofi="lofi = true" />
+    <WorldPanel :open="!!panel" :title="panel ? PANEL_TITLES[panel] : ''" @close="panel = null">
+      <Hero v-if="panel === 'about'" :languages="metrics?.languages" />
+      <RouteTopo v-else-if="panel === 'route'" />
+      <BlogPosts v-else-if="panel === 'logbook'" />
+      <div v-else-if="panel === 'projects'" class="flex flex-col gap-16">
+        <Projects :projects="featuredProjects" title="My Projects" />
+        <Projects :projects="starred ?? []" title="Starred Projects" section-id="starred-projects" />
+      </div>
+      <TechStack v-else-if="panel === 'stack'" />
+      <Contact v-else-if="panel === 'contact'" />
+    </WorldPanel>
+  </ClientOnly>
+
+  <!-- The classic page: shown in lo-fi mode, and what crawlers read. -->
+  <div v-show="lofi" class="flex w-full flex-col gap-24 pb-16">
+    <button
+      type="button"
+      class="w-fit self-end rounded-full border border-surface-border px-4 py-1.5 font-mono text-xs tracking-[0.12em] uppercase hover:border-[color:var(--accent-link)]"
+      @click="lofi = false"
+    >
+      ↑ Back to the mountains
+    </button>
+
     <Hero :languages="metrics?.languages" />
+
+    <RouteTopo />
 
     <TechStack />
 

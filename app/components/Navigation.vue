@@ -17,21 +17,7 @@ watch(
   },
 );
 
-const isDark = useState('theme-dark', () => true);
-
-function toggleTheme() {
-  isDark.value = !isDark.value;
-  if (import.meta.client) {
-    document.documentElement.classList.toggle('dark', isDark.value);
-    localStorage.setItem('theme', isDark.value ? 'dark' : 'light');
-  }
-}
-
-if (import.meta.client) {
-  const saved = localStorage.getItem('theme');
-  isDark.value = saved ? saved === 'dark' : true;
-  document.documentElement.classList.toggle('dark', isDark.value);
-}
+const { isDark, toggleTheme } = useTheme();
 </script>
 
 <template>

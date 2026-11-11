@@ -1,0 +1,18 @@
+{
+  "width": 926,
+  "height": 886,
+  "bounds": {
+    "north": 46.2,
+    "south": 46.176,
+    "west": 10.87,
+    "east": 10.906
+  },
+  "sizeMeters": {
+    "x": 2774,
+    "z": 2654
+  },
+  "cellMeters": 3.0,
+  "heightScale": 0.1,
+  "missing": 0,
+  "source": "Provincia Autonoma di Trento, LiDAR PAT 2014 integrato con voli 2018 (DTM 0.5 m) and LiDAR 2006/2009 (DTM 2 m), CC BY 4.0"
+}
